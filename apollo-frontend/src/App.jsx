@@ -41,13 +41,13 @@ function Shell({children,user,nav}){
   const logout=()=>{localStorage.clear();navg("/login")};
   return <div className="app-shell">
     <aside className={open?"sidebar":"sidebar collapsed"}>
-      <div className="brand"><img src="/apollo-logo.svg" alt="Apollo" className="brand-mark" style={{objectFit:"contain"}}/>{open&&<div><b>APOLLO</b><span>{user?.role==="ENGINEER"?"Engineer":"Elevators"}</span></div>}</div>
+      <div className="brand"><img src="/apollo_elevators_icon.png" alt="Apollo" className="brand-mark" style={{objectFit:"contain"}}/>{open&&<div><b>APOLLO</b><span>{user?.role==="ENGINEER"?"Engineer":"Elevators"}</span></div>}</div>
       <nav>{nav.map(([to,label,Icon])=><a key={to} className={location.pathname===to?"active":""} href={to}><Icon size={19}/>{open&&label}</a>)}</nav>
       {open&&user&&<div style={{marginTop:"auto",padding:"12px 13px",fontSize:12,color:"#9ba8b9"}}>
         <div style={{fontWeight:600,color:"#fff"}}>{user.username}</div>
         <div style={{fontSize:10,marginTop:2,color:"#d9a441"}}>{user.role}</div>
       </div>}
-      <button className="logout" onClick={logout}><LogOut size={18}/>{open&&"Sign out"}</button>
+      <button className="logout" onClick={logout} style={open&&user?{marginTop:0}:undefined}><LogOut size={18}/>{open&&"Sign out"}</button>
     </aside>
     <main className="main">
       <header>
