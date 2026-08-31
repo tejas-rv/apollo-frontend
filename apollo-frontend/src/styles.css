@@ -45,6 +45,15 @@ h1,h2,h3,h4,h5,h6{font-family:"DM Sans",system-ui,-apple-system,sans-serif;font-
 .summary-row:last-child{border-bottom:0}
 .summary-row.total{background:#f6f7f9;font-weight:700;font-size:14px}
 
+/* ── Engineer portal extras ── */
+.yes-btn, .no-btn { padding:6px 14px; border-radius:7px; border:1px solid; font-size:12px; font-weight:700; cursor:pointer; transition:.15s; }
+.yes-btn { background:#e8f6ee; border-color:#217746; color:#217746; }
+.yes-btn:hover { background:#d4f0e0; }
+.no-btn  { background:#faecec; border-color:#a33838; color:#a33838; }
+.no-btn:hover  { background:#f5dcdc; }
+.checklist-item { border:1px solid var(--line); border-radius:9px; padding:12px 14px; background:#fafbfc; }
+.checklist-item+.checklist-item { margin-top:10px; }
+
 @media(max-width:850px){
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
   .charts-row,.due-row{flex-direction:column}

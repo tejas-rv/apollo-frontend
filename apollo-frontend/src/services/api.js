@@ -55,5 +55,16 @@ export const api = {
   contractEmail: body => request("/api/admin/notifications/email/contract",{method:"POST",body:JSON.stringify(body)}),
   whatsapp: body => request("/api/admin/notifications/whatsapp",{method:"POST",body:JSON.stringify(body)}),
   contractWhatsapp: body => request("/api/admin/notifications/whatsapp/contract",{method:"POST",body:JSON.stringify(body)}),
-  refreshSecurity: () => request("/api/admin/security/config/refresh",{method:"POST"})
+  refreshSecurity: () => request("/api/admin/security/config/refresh",{method:"POST"}),
+  // Engineer portal
+  engineerDashboard: () => request("/api/engineer/dashboard"),
+  engineerCustomers: (query, page=0, size=20) => query
+    ? cached(`eng-search:${query}:${page}`, ()=>request(`/api/engineer/customers?query=${encodeURIComponent(query)}&page=${page}&size=${size}`))
+    : cached(`eng-customers:${page}:${size}`, ()=>request(`/api/engineer/customers?page=${page}&size=${size}`)),
+  engineerCustomer: id => cached(`eng-customer:${id}`, ()=>request(`/api/engineer/customers/${id}`)),
+  engineerChecklistTemplate: () => cached("eng-checklist", ()=>request("/api/engineer/service-reports/checklist-template")),
+  engineerMyReports: (page=0, size=20) => request(`/api/engineer/service-reports?page=${page}&size=${size}`),
+  engineerReport: id => request(`/api/engineer/service-reports/${id}`),
+  engineerSubmitReport: body => request("/api/engineer/service-reports", {method:"POST", body:JSON.stringify(body)}),
+  engineerReportPdf: id => request(`/api/engineer/service-reports/${id}/pdf`),
 };
