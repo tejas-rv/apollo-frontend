@@ -5,6 +5,12 @@ import { api } from "../services/api";
 
 const NA = "NA";
 const val = (v) => (v === null || v === undefined || v === "" ? NA : v);
+const fmtMotor = (m) =>
+  !m ? null : [m.kw, m.amps, m.speed, m.voltage, m.frequency, m.noOfPoles && `${m.noOfPoles} poles`].filter(Boolean).join(" · ");
+const fmtPulley = (p) =>
+  !p ? null : `Dia ${val(p.diameter)} · Grooves ${val(p.noOfGrooves)}`;
+const fmtBattery = (b) =>
+  !b ? null : [b.make, b.voltage, b.noOfBatteries && `${b.noOfBatteries} batteries`].filter(Boolean).join(" · ");
 
 function Row({ label, value }) {
   return (
@@ -138,8 +144,10 @@ export default function CustomerDetails() {
                   <Row label="No. of ropes" value={md.noOfRopes} />
                   <Row label="Rope dia (mm)" value={md.diaOfTheRopeMm} />
                   <Row label="Rope length (mm)" value={md.lengthOfTheRopeMm} />
-                  <Row label="Deflector pulley" value={md.deflectorPulley} />
-                  <Row label="Main motor" value={md.mainMotor} />
+                  {md.isDeflectorPulley && (
+                    <Row label="Deflector pulley" value={fmtPulley(md.deflectorPulley)} />
+                  )}
+                  <Row label="Main motor" value={fmtMotor(md.mainMotor)} />
                   <Row label="Roping" value={md.roping} />
                 </dl>
               </details>
@@ -153,7 +161,7 @@ export default function CustomerDetails() {
                   <Row label="OSG tripping speed" value={osg.trippingSpeed} />
                   <Row label="UPS type" value={ups.upsType} />
                   <Row label="UPS kVA" value={ups.kva} />
-                  <Row label="UPS battery" value={ups.battery} />
+                  <Row label="UPS battery" value={fmtBattery(ups.battery)} />
                 </dl>
               </details>
 

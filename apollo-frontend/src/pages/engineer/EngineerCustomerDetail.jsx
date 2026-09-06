@@ -3,6 +3,21 @@ import {Link,useNavigate,useParams} from "react-router-dom";
 import {ArrowLeft,ClipboardList} from "lucide-react";
 import {api} from "../../services/api";
 
+const NA="—";
+const val=v=>(v===null||v===undefined||v==="" ? NA : v);
+function Row({label,value}){
+  return <><dt>{label}</dt><dd>{val(value)}</dd></>;
+}
+const fmtMotor=l=>{
+  if(!l.mainMotorKw&&!l.mainMotorAmps&&!l.mainMotorSpeed&&!l.mainMotorVoltage&&!l.mainMotorFrequency&&!l.mainMotorNoOfPoles) return null;
+  return [l.mainMotorKw,l.mainMotorAmps,l.mainMotorSpeed,l.mainMotorVoltage,l.mainMotorFrequency,l.mainMotorNoOfPoles&&`${l.mainMotorNoOfPoles} poles`].filter(Boolean).join(" · ");
+};
+const fmtPulley=l=>!l.isDeflectorPulley ? null : `Dia ${val(l.deflectorPulleyDiameter)} · Grooves ${val(l.deflectorPulleyNoOfGrooves)}`;
+const fmtBattery=l=>{
+  if(!l.batteryMake&&!l.batteryVoltage&&!l.batteryNoOfBatteries) return null;
+  return [l.batteryMake,l.batteryVoltage,l.batteryNoOfBatteries&&`${l.batteryNoOfBatteries} batteries`].filter(Boolean).join(" · ");
+};
+
 export default function EngineerCustomerDetail(){
   const {id}=useParams(), nav=useNavigate();
   const [c,setC]=useState(null);
@@ -62,10 +77,56 @@ export default function EngineerCustomerDetail(){
           </div>
           <span className="badge">{l.serialNumber||"No serial"}</span>
         </div>
+
+        <dl className="lift-specs">
+          <Row label="Lift model" value={l.liftModel} />
+          <Row label="Installation type" value={l.installationType} />
+          <Row label="Year of installation" value={l.yearOfInstallation} />
+          <Row label="Capacity (kg)" value={l.capacityInKg} />
+          <Row label="Capacity (persons)" value={l.capacityInPersons} />
+          <Row label="Door type" value={l.doorType} />
+          <Row label="Machine type" value={l.machineType} />
+          <Row label="Machine name" value={l.machineName} />
+          <Row label="kW" value={l.kw} />
+          <Row label="Amps" value={l.amps} />
+          <Row label="Speed" value={l.speed} />
+          <Row label="Voltage" value={l.voltage} />
+          <Row label="Frequency" value={l.frequency} />
+        </dl>
+
+        <details className="lift-more">
+          <summary>Machine details</summary>
+          <dl className="lift-specs">
+            <Row label="Manufactured by" value={l.manufacturedBy} />
+            <Row label="Year of manufacture" value={l.yearOfManufacture} />
+            <Row label="No. of grooves" value={l.noOfGrooves} />
+            <Row label="Friction sheave dia" value={l.frictionSheaveDiameter} />
+            <Row label="No. of ropes" value={l.noOfRopes} />
+            <Row label="Rope dia (mm)" value={l.diaOfTheRopeMm} />
+            <Row label="Rope length (mm)" value={l.lengthOfTheRopeMm} />
+            {l.isDeflectorPulley && <Row label="Deflector pulley" value={fmtPulley(l)} />}
+            <Row label="Main motor" value={fmtMotor(l)} />
+            <Row label="Roping" value={l.roping} />
+          </dl>
+        </details>
+
+        <details className="lift-more">
+          <summary>OSG &amp; UPS</summary>
+          <dl className="lift-specs">
+            <Row label="OSG type" value={l.osgType} />
+            <Row label="OSG rated speed" value={l.ratedSpeed} />
+            <Row label="OSG tripping speed" value={l.trippingSpeed} />
+            <Row label="UPS present" value={l.isUpsPresent ? "Yes" : "No"} />
+            <Row label="UPS type" value={l.upsType} />
+            <Row label="UPS kVA" value={l.kva} />
+            <Row label="UPS battery" value={fmtBattery(l)} />
+          </dl>
+        </details>
+
         {(l.amcContracts||[]).map(a=><div className="amc" key={a.id||a.contractNumber}>
           <div>
             <b>{a.contractNumber||"AMC Contract"}</b>
-            <span>{a.contractType||"—"} · {a.startDate||"—"} → {a.endDate||"—"} · Next service: {a.nextServiceDate||"—"}</span>
+            <span>{a.contractType||"—"} · {a.startDate||"—"} → {a.endDate||"—"} · Next service: {a.nextServiceDate||"—"} · Services {val(a.completedServices)}/{val(a.totalServices)}</span>
           </div>
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
             <span className={`status ${String(a.status).toLowerCase()}`}>{a.status}</span>
