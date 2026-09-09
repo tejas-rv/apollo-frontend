@@ -56,6 +56,7 @@ export const api = {
   whatsapp: body => request("/api/admin/notifications/whatsapp",{method:"POST",body:JSON.stringify(body)}),
   contractWhatsapp: body => request("/api/admin/notifications/whatsapp/contract",{method:"POST",body:JSON.stringify(body)}),
   refreshSecurity: () => request("/api/admin/security/config/refresh",{method:"POST"}),
+  submitEnquiry: body => request("/api/public/enquiries",{method:"POST",body:JSON.stringify(body)}),
   // Engineer portal
   engineerDashboard: () => request("/api/engineer/dashboard"),
   engineerCustomers: (query, page=0, size=20) => query

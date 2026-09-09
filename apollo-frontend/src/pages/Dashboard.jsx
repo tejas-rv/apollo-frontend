@@ -143,7 +143,7 @@ export default function Dashboard(){
       <div>
         <span className="eyebrow">OVERVIEW</span>
         <h1>Dashboard</h1>
-        <p className="muted">Apollo Elevators · service operations at a glance</p>
+        <p className="muted">Apollo Elevator · service operations at a glance</p>
       </div>
       <Link className="primary" to="/customers/new">+ Add customer</Link>
     </div>

@@ -1,4 +1,4 @@
-# Apollo Elevators Frontend
+# Apollo Elevator Frontend
 
 React + Vite + JSX frontend mapped to the supplied Spring Boot backend.
 

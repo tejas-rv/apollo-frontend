@@ -1,0 +1,5 @@
+.app-logo{display:flex;align-items:center;gap:12px}
+.app-logo-mark{width:var(--logo-size);height:var(--logo-size);border-radius:var(--logo-radius,16px);object-fit:contain;flex-shrink:0}
+.app-logo-copy b,.app-logo-copy span{display:block}
+.app-logo-copy b{letter-spacing:2px;font-size:calc(var(--logo-size) * .25);line-height:1}
+.app-logo-copy span{margin-top:4px;color:#6d7785;font-size:calc(var(--logo-size) * .16)}

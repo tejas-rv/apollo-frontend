@@ -1,8 +1,10 @@
 import React,{useEffect,useState} from "react";
-import {Routes,Route,Navigate,useNavigate} from "react-router-dom";
+import {Routes,Route,Navigate,NavLink,useNavigate,useLocation} from "react-router-dom";
 import {LayoutDashboard,Users,FileText,Send,ShieldCheck,LogOut,Menu,Receipt,ClipboardList,History} from "lucide-react";
 import {api} from "./services/api";
 import Login from "./pages/Login";
+import HomePage from "./pages/HomePage";
+import ContactPage from "./pages/ContactPage";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
 import CustomerForm from "./pages/CustomerForm";
@@ -31,18 +33,24 @@ const engineerNav=[
 ];
 
 function Protected({children,role,allowed}){
-  if(!localStorage.getItem("accessToken")) return <Navigate to="/login" replace/>;
-  if(allowed&&!allowed.includes(role)) return <Navigate to="/login" replace/>;
+  if(!localStorage.getItem("accessToken")) return <Navigate to="/login" replace state={{from:window.location.pathname}}/>;
+  if(allowed&&!allowed.includes(role)) return <Navigate to="/login" replace state={{from:window.location.pathname}}/>;
   return children;
 }
 
 function Shell({children,user,nav}){
   const [open,setOpen]=useState(true), navg=useNavigate();
-  const logout=()=>{localStorage.clear();navg("/login")};
+  const [signedOut,setSignedOut]=useState(false);
+  const location=useLocation();
+  const logout=()=>{
+    localStorage.clear();
+    setSignedOut(true);
+    navg("/", { replace: true });
+  };
   return <div className="app-shell">
     <aside className={open?"sidebar":"sidebar collapsed"}>
-      <div className="brand"><img src="/apollo_elevators_icon.png" alt="Apollo" className="brand-mark" style={{objectFit:"contain"}}/>{open&&<div><b>APOLLO</b><span>{user?.role==="ENGINEER"?"Engineer":"Elevators"}</span></div>}</div>
-      <nav>{nav.map(([to,label,Icon])=><a key={to} className={location.pathname===to?"active":""} href={to}><Icon size={19}/>{open&&label}</a>)}</nav>
+      <div className="brand"><img src="/apollo_elevator_icon.png" alt="Apollo" className="brand-mark" style={{objectFit:"contain"}}/>{open&&<div><b>APOLLO</b><span>{user?.role==="ENGINEER"?"Engineer":"Elevator"}</span></div>}</div>
+      <nav>{nav.map(([to,label,Icon])=><NavLink key={to} to={to} end={to==="/"} className={({isActive})=>isActive||location.pathname===to+"/"?"active":""}><Icon size={19}/>{open&&label}</NavLink>)}</nav>
       {open&&user&&<div style={{marginTop:"auto",padding:"12px 13px",fontSize:12,color:"#9ba8b9"}}>
         <div style={{fontWeight:600,color:"#fff"}}>{user.username}</div>
         <div style={{fontSize:10,marginTop:2,color:"#d9a441"}}>{user.role}</div>
@@ -57,6 +65,7 @@ function Shell({children,user,nav}){
           <div><b>{user?.username||"User"}</b><small>{user?.role||"—"}</small></div>
         </div>
       </header>
+      {signedOut&&<div className="alert success" style={{margin:"18px 32px 0"}}>You have been successfully signed out.</div>}
       {children}
     </main>
   </div>;
@@ -74,10 +83,14 @@ export default function App(){
   const isEngineer=user?.role==="ENGINEER";
 
   return <Routes>
+    <Route path="/" element={<HomePage/>}/>
+    <Route path="/contact" element={<ContactPage/>}/>
     <Route path="/login" element={<Login onLogin={u=>{setUser(u);localStorage.setItem("userRole",u.role);localStorage.setItem("username",u.username);}}/>}/>
+    <Route path="/app" element={<Protected role={user?.role} allowed={["ADMIN"]}><Shell user={user} nav={adminNav}><Dashboard/></Shell></Protected>}/>
+    <Route path="/engineer" element={<Protected role={user?.role} allowed={["ENGINEER","ADMIN"]}><Shell user={user} nav={engineerNav}><EngineerDashboard/></Shell></Protected>}/>
 
     {/* ── Admin routes ── */}
-    <Route path="/*" element={
+    <Route path="/app/*" element={
       <Protected role={user?.role} allowed={["ADMIN"]}>
         <Shell user={user} nav={adminNav}>
           <Routes>
@@ -89,7 +102,7 @@ export default function App(){
             <Route path="/bills" element={<Bills/>}/>
             <Route path="/notifications" element={<Notifications/>}/>
             <Route path="/settings" element={<Settings/>}/>
-            <Route path="*" element={<Navigate to="/" replace/>}/>
+            <Route path="*" element={<Navigate to="/app" replace/>}/>
           </Routes>
         </Shell>
       </Protected>

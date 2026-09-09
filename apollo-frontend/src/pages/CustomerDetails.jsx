@@ -99,7 +99,7 @@ export default function CustomerDetails() {
 
       <div className="panel">
         <div className="panel-head">
-          <h2>Elevators &amp; AMC</h2>
+          <h2>Elevator &amp; AMC</h2>
           <Link className="secondary small" to="/notifications"><Mail size={15} /> Notifications</Link>
         </div>
 
