@@ -1,16 +1,28 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CheckCircle2 } from "lucide-react";
+import {
+  Award,
+  Users,
+  HardHat,
+  Clock,
+  ShieldCheck,
+  FileCheck2,
+  Headphones,
+  PhoneCall,
+  Zap,
+  Star,
+  ArrowRight,
+} from "lucide-react";
 import PublicNav from "../components/PublicNav";
 import AppLogo from "../components/AppLogo";
 import "../components/AppLogo.css";
 import "./HomePage.css";
 
 const STATS = [
-  { value: "15+", label: "Years experience" },
-  { value: "500+", label: "Projects delivered" },
-  { value: "40+", label: "Engineers on ground" },
-  { value: "24/7", label: "Support & service" },
+  { icon: Award, value: "15+", label: "Years experience" },
+  { icon: Users, value: "600+", label: "Projects completed" },
+  { icon: HardHat, value: "40+", label: "Expert engineers" },
+  { icon: Clock, value: "24/7", label: "Support available" },
 ];
 
 const PRODUCTS = [
@@ -23,15 +35,18 @@ const PRODUCTS = [
 ];
 
 const WHY_APOLLO = [
-  "In-house R&D team",
-  "High passenger safety",
-  "Erection and maintenance staff with international exposure",
-  "On-time delivery",
-  "Prompt communication and service backup",
-  "Competitive pricing with no compromise on quality",
-  "Documented quality-control measures",
-  "Adherence to EN-81 and IS specifications",
-  "Established rapport with international vendors",
+  { icon: ShieldCheck, title: "Quality & Safety", copy: "International safety standards & high-quality components." },
+  { icon: Users, title: "Experienced Team", copy: "Skilled engineers with years of domain experience." },
+  { icon: Clock, title: "Timely Service", copy: "On-time delivery, installation and quick support." },
+  { icon: FileCheck2, title: "AMC Plans", copy: "Comprehensive AMC plans to keep your lift running smoothly." },
+  { icon: Headphones, title: "24/7 Support", copy: "Round-the-clock breakdown support across Bangalore." },
+];
+
+const TRUST_BAR = [
+  { icon: PhoneCall, title: "24/7 Support", copy: "Always here for you" },
+  { icon: Zap, title: "Quick Response", copy: "Within 2–4 hours" },
+  { icon: ShieldCheck, title: "Genuine Parts", copy: "100% original parts" },
+  { icon: Star, title: "Trusted by 500+ Customers", copy: "4.8/5 average rating" },
 ];
 
 const GALLERY = [
@@ -86,8 +101,11 @@ export default function HomePage() {
         <div className="ap-stats__inner">
           {STATS.map((s) => (
             <div className="ap-stat" key={s.label}>
-              <span>{s.value}</span>
-              <small>{s.label}</small>
+              <s.icon size={22} />
+              <div>
+                <span>{s.value}</span>
+                <small>{s.label}</small>
+              </div>
             </div>
           ))}
         </div>
@@ -118,34 +136,43 @@ export default function HomePage() {
                   <div className="ap-product__media"><img src={p.image} alt={p.title} loading="lazy" /></div>
                   <h3>{p.title}</h3>
                   <p>{p.copy}</p>
+                  <a className="ap-product__link" href="#products">Learn More <ArrowRight size={14} /></a>
                 </div>
               ))}
             </div>
           </section>
 
-          <section id="why" className="ap-section">
-            <span className="ap-section__eyebrow">Why Apollo</span>
-            <h2>Why Choose Apollo — what a service contract actually gets you.</h2>
-            <div className="ap-why">
-              {WHY_APOLLO.map((item) => (
-                <div className="ap-why__item" key={item}>
-                  <CheckCircle2 size={20} />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+        </div>
+      </div>
 
+      <section id="why" className="ap-whyband">
+        <div className="ap-whyband__inner">
+          <span className="ap-section__eyebrow ap-section__eyebrow--light">Why Choose Apollo Elevators?</span>
+          <h2>Experience. Quality. Trust.</h2>
+          <div className="ap-why">
+            {WHY_APOLLO.map((item) => (
+              <div className="ap-why__item" key={item.title}>
+                <item.icon size={22} />
+                <span>{item.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="ap-shaft">
+        <div className="ap-sections">
           <section id="gallery" className="ap-section">
-            <span className="ap-section__eyebrow">Gallery</span>
-            <h2>Recent installations and service visits.</h2>
+            <span className="ap-section__eyebrow">Our Projects</span>
+            <h2>Some of Our Recent Projects</h2>
             <div className="ap-gallery">
-              {GALLERY.map((g) => (
-                <figure className="ap-gallery__item" key={g.caption}>
-                  <img src={g.image} alt={g.caption} loading="lazy" />
-                  <figcaption>{g.caption}</figcaption>
-                </figure>
-              ))}
+              <div className="ap-gallery__track">
+                {[...GALLERY, ...GALLERY].map((g, i) => (
+                  <figure className="ap-gallery__item" key={`${g.caption}-${i}`}>
+                    <img src={g.image} alt={g.caption} loading="lazy" />
+                  </figure>
+                ))}
+              </div>
             </div>
           </section>
 
@@ -175,13 +202,29 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="ap-footer">
-        <AppLogo size={28} rounded={false} />
-        <div className="ap-footer__contact">
-          <a href="tel:+918971974009">8971974009</a>
-          <a href="mailto:apolloelevators1@gmail.com">apolloelevators1@gmail.com</a>
+      <section className="ap-trustbar">
+        <div className="ap-trustbar__inner">
+          {TRUST_BAR.map((t) => (
+            <div className="ap-trustbar__item" key={t.title}>
+              <t.icon size={20} />
+              <div>
+                <strong>{t.title}</strong>
+                <small>{t.copy}</small>
+              </div>
+            </div>
+          ))}
         </div>
-        <span>© {new Date().getFullYear()} Apollo Elevator. All rights reserved.</span>
+      </section>
+
+      <footer className="ap-footer">
+        <div className="ap-footer__inner">
+          <AppLogo size={28} rounded={false} />
+          <div className="ap-footer__contact">
+            <a href="tel:+918971974009">8971974009</a>
+            <a href="mailto:apolloelevators1@gmail.com">apolloelevators1@gmail.com</a>
+          </div>
+          <span>© {new Date().getFullYear()} Apollo Elevator. All rights reserved.</span>
+        </div>
       </footer>
     </div>
   );
