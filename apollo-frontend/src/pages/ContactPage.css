@@ -13,11 +13,15 @@
   color: var(--ink);
   background: var(--white);
   min-height: 100vh;
-  padding: 72px 24px;
 }
-.cp-page h1 { font-family: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; letter-spacing: -0.01em; font-size: clamp(32px, 4vw, 46px); line-height: 1.08; margin: 20px 0 14px; }
-.cp-grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 64px; }
+.cp-page h1 { font-family: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; letter-spacing: -0.01em; font-size: clamp(32px, 4vw, 46px); line-height: 1.08; margin: 0 0 14px; }
+.cp-intro__heading { font-family: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif; font-size: 22px; margin: 20px 0 18px; }
+.cp-grid { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 64px; padding: 48px 24px 72px; }
+.cp-form__intro { font-size: 16px; color: var(--steel); max-width: 52ch; margin: 0 0 8px; line-height: 1.7; }
 .cp-intro p { font-size: 16px; color: var(--steel); max-width: 42ch; margin: 0 0 28px; line-height: 1.7; }
+.cp-toast { max-width: 1180px; margin: 24px auto 0; padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; }
+.cp-toast--success { background: #eaf7ef; color: #28734a; }
+.cp-toast--error { background: #fcecec; color: #9c3636; }
 .cp-direct { display: flex; flex-direction: column; gap: 16px; padding: 22px 0 0; border-top: 1px solid var(--line); max-width: 42ch; }
 .cp-direct__row { display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
 .cp-direct__label { font-size: 12px; text-transform: none; color: var(--steel); }
@@ -57,4 +61,6 @@
 .cp-confirm { max-width: 480px; margin: 10vh auto; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .cp-confirm h1 { margin-top: 24px; }
 .cp-confirm p { color: var(--steel); font-size: 16px; }
-@media (max-width: 640px) { .cp-page { padding: 48px 16px; } .cp-mapCard__header { flex-direction: column; } .cp-directions { width: 100%; } }
+.cp-confirm__home { margin-top: 22px; display: inline-flex; align-items: center; justify-content: center; padding: 14px 30px; border-radius: 999px; background: var(--orange); color: var(--white); font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 15px; text-decoration: none; box-shadow: 0 12px 24px rgba(224,122,52,.22); transition: background .15s ease, transform .15s ease; }
+.cp-confirm__home:hover { background: #cf6520; transform: translateY(-1px); }
+@media (max-width: 640px) { .cp-grid { padding: 32px 16px 48px; } .cp-mapCard__header { flex-direction: column; } .cp-directions { width: 100%; } }

@@ -13,13 +13,16 @@ export function invalidateCache(prefix) {
   _cache.forEach((_, k) => { if (!prefix || k.startsWith(prefix)) _cache.delete(k); });
 }
 
+const NO_AUTO_LOGOUT_PATHS = ["/api/auth/login", "/api/auth/refresh", "/api/auth/change-password"];
+
 async function request(path, options = {}) {
   const token = localStorage.getItem("accessToken");
   const headers = new Headers(options.headers || {});
   if (options.body && !(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
   const res = await fetch(`${BASE}${path}`, {...options, headers});
-  if (res.status === 401) {
+  const type = res.headers.get("content-type") || "";
+  if (res.status === 401 && !NO_AUTO_LOGOUT_PATHS.some(p => path.startsWith(p))) {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     window.location.href = "/login";
@@ -27,12 +30,16 @@ async function request(path, options = {}) {
   }
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
-    try { const e = await res.json(); message = e.message || e.error || message; } catch {}
+    try {
+      if (type.includes("application/json")) { const e = await res.json(); message = e.message || e.error || message; }
+      else { const text = await res.text(); if (text) message = text; }
+    } catch {}
     throw new Error(message);
   }
   if (res.status === 204) return null;
-  const type = res.headers.get("content-type") || "";
-  return type.includes("application/pdf") ? res.blob() : res.json();
+  if (type.includes("application/pdf")) return res.blob();
+  if (type.includes("application/json")) return res.json();
+  return res.text();
 }
 
 export const api = {
@@ -56,7 +63,14 @@ export const api = {
   whatsapp: body => request("/api/admin/notifications/whatsapp",{method:"POST",body:JSON.stringify(body)}),
   contractWhatsapp: body => request("/api/admin/notifications/whatsapp/contract",{method:"POST",body:JSON.stringify(body)}),
   refreshSecurity: () => request("/api/admin/security/config/refresh",{method:"POST"}),
+  changePassword: body => request("/api/auth/change-password",{method:"PUT",body:JSON.stringify(body)}),
   submitEnquiry: body => request("/api/public/enquiries",{method:"POST",body:JSON.stringify(body)}),
+  adminEnquiries: (params={}) => {
+    const q = new URLSearchParams(Object.entries(params).filter(([,v])=>v!==""&&v!=null));
+    return request(`/api/admin/enquiries?${q.toString()}`);
+  },
+  adminEnquiry: id => request(`/api/admin/enquiries/${id}`),
+  updateEnquiryStatus: (id,status) => request(`/api/admin/enquiries/${id}/status`,{method:"PUT",body:JSON.stringify({status})}),
   // Engineer portal
   engineerDashboard: () => request("/api/engineer/dashboard"),
   engineerCustomers: (query, page=0, size=20) => query

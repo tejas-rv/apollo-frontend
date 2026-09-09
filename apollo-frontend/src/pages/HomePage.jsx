@@ -1,26 +1,25 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { CheckCircle2 } from "lucide-react";
+import PublicNav from "../components/PublicNav";
 import AppLogo from "../components/AppLogo";
 import "../components/AppLogo.css";
 import "./HomePage.css";
 
-const SECTIONS = [
-  { id: "top", title: "Home" },
-  { id: "about", title: "About" },
-  { id: "products", title: "Products" },
-  { id: "why", title: "Why Apollo" },
-  { id: "engineering", title: "Engineering" },
-  { id: "contact", title: "Contact" },
+const STATS = [
+  { value: "15+", label: "Years experience" },
+  { value: "500+", label: "Projects delivered" },
+  { value: "40+", label: "Engineers on ground" },
+  { value: "24/7", label: "Support & service" },
 ];
 
 const PRODUCTS = [
-  { title: "Passenger Elevators", copy: "Traction elevators for commercial and residential buildings, with car enclosures customised in mild steel, stainless steel or glass.", image: "/passenger-icon.jpg" },
-  { title: "Home Lifts", copy: "Compact lifts built for bungalows and villas, fitted to an existing staircase or a new build without disturbing the front elevation.", image: "/home-lift.jpg" },
-  { title: "Capsule Lifts", copy: "3-side and 5-side panoramic glass cars for malls, jewellery showrooms and supermarkets, built around visibility into the lobby.", image: "/capsule-lift.jpg" },
-  { title: "MRL Elevators", copy: "Machine-room-less cars using a gearless permanent-magnet synchronous drive, saving shaft space and running on lower energy.", image: null },
-  { title: "Glass Door Lifts", copy: "Tempered laminated glass fronts for showrooms, skywalks and malls, sourced to EN-81 glazing standards.", image: null },
-  { title: "Hospital & Freight Lifts", copy: "Wide-door cars sized for stretchers and bulk loads, up to 5,000 kg, with reinforced car and lift-well dimensions.", image: null },
+  { title: "Passenger Elevators", copy: "Traction elevators for commercial and residential buildings, with car enclosures customised in mild steel, stainless steel or glass.", image: "/liftImages/passenger-elevator.jpg" },
+  { title: "Home Lifts", copy: "Compact lifts built for bungalows and villas, fitted to an existing staircase or a new build without disturbing the front elevation.", image: "/liftImages/home-lift.jpg" },
+  { title: "Capsule Lifts", copy: "3-side and 5-side panoramic glass cars for malls, jewellery showrooms and supermarkets, built around visibility into the lobby.", image: "/liftImages/capsule-lift.jpg" },
+  { title: "MRL Elevators", copy: "Machine-room-less cars using a gearless permanent-magnet synchronous drive, saving shaft space and running on lower energy.", image: "/liftImages/mrl-elevator.jpg" },
+  { title: "Glass Door Lifts", copy: "Tempered laminated glass fronts for showrooms, skywalks and malls, sourced to EN-81 glazing standards.", image: "/liftImages/glass-door-lift.jpg" },
+  { title: "Hospital & Freight Lifts", copy: "Wide-door cars sized for stretchers and bulk loads, up to 5,000 kg, with reinforced car and lift-well dimensions.", image: "/liftImages/hospital-freight-lift.jpg" },
 ];
 
 const WHY_APOLLO = [
@@ -35,6 +34,15 @@ const WHY_APOLLO = [
   "Established rapport with international vendors",
 ];
 
+const GALLERY = [
+  { caption: "Residential home-lift installation", image: "/liftImages/gallery-residential.jpg" },
+  { caption: "Commercial capsule lift, mall lobby", image: "/liftImages/gallery-capsule-mall.jpg" },
+  { caption: "Machine room retrofit", image: "/liftImages/gallery-machine-room.jpg" },
+  { caption: "High-rise passenger elevator bank", image: "/liftImages/gallery-highrise.jpg" },
+  { caption: "Hospital freight lift commissioning", image: "/liftImages/gallery-hospital-freight.jpg" },
+  { caption: "Annual maintenance service visit", image: "/liftImages/gallery-amc-service.jpg" },
+];
+
 const ENGINEERING = [
   { title: "Controllers", copy: "Program Logic Control systems that read upward and downward traffic and select the right car across a bank of elevators." },
   { title: "Inverters", copy: "V3F drives — Fuji for gearless machines, Yaskawa for traction elevators — chosen to protect the winding unit through voltage spikes and phase reversal." },
@@ -42,33 +50,20 @@ const ENGINEERING = [
 ];
 
 export default function HomePage() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const active = window.location.hash || "#top";
+  const location = useLocation();
 
-  const closeMenu = () => setMenuOpen(false);
+  useEffect(() => {
+    if (!location.hash || location.hash === "#top") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const el = document.querySelector(location.hash);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="ap-home">
-      <header className="ap-nav">
-        <div className="ap-nav__inner">
-          <a href="#top" className="ap-nav__brand">
-            <AppLogo size={40} />
-            <div className="ap-nav__brandtext">
-              <span className="ap-nav__name">Apollo Elevator</span>
-              <span className="ap-nav__tag">Ride the wings of change</span>
-            </div>
-          </a>
-          <button className="ap-nav__toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu" aria-expanded={menuOpen}>
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <nav className={menuOpen ? "ap-nav__links open" : "ap-nav__links"} aria-label="Primary">
-            {SECTIONS.map((f) => <a key={f.id} href={`#${f.id}`} onClick={closeMenu} className={active === `#${f.id}` ? "active" : ""}>{f.title}</a>)}
-          </nav>
-          <Link to="/login" className="ap-nav__login" onClick={closeMenu}>Login</Link>
-        </div>
-      </header>
-
-      {menuOpen && <button type="button" className="ap-nav__backdrop" aria-label="Close menu" onClick={closeMenu} />}
+      <PublicNav />
 
       <section id="top" className="ap-hero">
         <div className="ap-hero__media" />
@@ -79,15 +74,22 @@ export default function HomePage() {
               <h1>Vertical transportation,<br />engineered and serviced end to end.</h1>
               <p>Apollo Elevator designs, installs and maintains passenger, home, capsule and freight elevators across Bangalore — and handles AMC contracts, billing, and service visits through this platform.</p>
               <div className="ap-hero__ctas">
-                <a href="#contact" className="ap-btn ap-btn--primary">Talk to us</a>
+                <Link to="/contact" className="ap-btn ap-btn--primary">Get a quote</Link>
+                <a href="#products" className="ap-btn ap-btn--ghost">View products</a>
               </div>
             </div>
-            <div className="ap-hero__panel">
-              <div><span>24/7</span><small>Service response</small></div>
-              <div><span>AMC</span><small>Billing + reports</small></div>
-              <div><span>Support</span><small>Customer support</small></div>
-            </div>
           </div>
+        </div>
+      </section>
+
+      <section className="ap-stats">
+        <div className="ap-stats__inner">
+          {STATS.map((s) => (
+            <div className="ap-stat" key={s.label}>
+              <span>{s.value}</span>
+              <small>{s.label}</small>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -101,13 +103,8 @@ export default function HomePage() {
                 <p>Apollo Elevator was established in 2010 to bring dependable, internationally-benchmarked elevator systems to Indian buildings. Every installation is configured against EN-81 international norms and Indian standards for traction, hydraulic and MRL gearless elevators.</p>
                 <p>The team is led by CEO T. Venkatesh, who brings over 40 years in the elevator industry, and a maintenance crew trained to keep drives and controls running with minimal downtime.</p>
               </div>
-              <div className="ap-about__photos">
-                <div className="ap-about__photo ap-about__photo--white">
-                  <img src="/cabin-white.jpg" alt="Apollo elevator car interior, brushed steel finish" />
-                </div>
-                <div className="ap-about__photo ap-about__photo--blue">
-                  <img src="/cabin-blue.jpg" alt="Apollo elevator car interior, blue laminate finish" />
-                </div>
+              <div className="ap-about__photo">
+                <img src="/liftImages/engineers-inspection.jpg" alt="Apollo Elevator engineers inspecting a lift installation" loading="lazy" />
               </div>
             </div>
           </section>
@@ -118,7 +115,7 @@ export default function HomePage() {
             <div className="ap-products">
               {PRODUCTS.map((p) => (
                 <div className="ap-product" key={p.title}>
-                  {p.image ? <div className="ap-product__media"><img src={p.image} alt={p.title} /></div> : <div className="ap-product__media ap-product__media--blank" />}
+                  <div className="ap-product__media"><img src={p.image} alt={p.title} loading="lazy" /></div>
                   <h3>{p.title}</h3>
                   <p>{p.copy}</p>
                 </div>
@@ -128,10 +125,28 @@ export default function HomePage() {
 
           <section id="why" className="ap-section">
             <span className="ap-section__eyebrow">Why Apollo</span>
-            <h2>What a service contract with Apollo actually gets you.</h2>
-            <ul className="ap-why">
-              {WHY_APOLLO.map((item) => <li key={item}>{item}</li>)}
-            </ul>
+            <h2>Why Choose Apollo — what a service contract actually gets you.</h2>
+            <div className="ap-why">
+              {WHY_APOLLO.map((item) => (
+                <div className="ap-why__item" key={item}>
+                  <CheckCircle2 size={20} />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section id="gallery" className="ap-section">
+            <span className="ap-section__eyebrow">Gallery</span>
+            <h2>Recent installations and service visits.</h2>
+            <div className="ap-gallery">
+              {GALLERY.map((g) => (
+                <figure className="ap-gallery__item" key={g.caption}>
+                  <img src={g.image} alt={g.caption} loading="lazy" />
+                  <figcaption>{g.caption}</figcaption>
+                </figure>
+              ))}
+            </div>
           </section>
 
           <section id="engineering" className="ap-section">
@@ -147,27 +162,25 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section id="contact" className="ap-section ap-section--contact">
-            <span className="ap-section__eyebrow">Contact</span>
-            <h2>Need help? Contact us.</h2>
-            <div className="ap-contact">
-              <div className="ap-contact__details">
-                <p className="ap-contact__addr">No. 14, Karihobana Halli, T.G. Palya,<br />Bangalore – 560 058</p>
-                <p><a href="tel:+918971974009">8971974009</a> · <a href="tel:+919148328396">9148328396</a></p>
-                <p><a href="mailto:apolloelevators1@gmail.com">apolloelevators1@gmail.com</a></p>
-              </div>
-              <div className="ap-contact__card">
-                <h3>Customers can reach us here</h3>
-                <p>For enquiries, calls, and service requests, please contact us directly. We’ll respond from the Apollo team and help you with the next steps.</p>
-                <Link className="ap-btn ap-btn--primary" to="/contact">Enquiry form</Link>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
 
+      <section className="ap-cta">
+        <div className="ap-cta__inner">
+          <div>
+            <h2>Ready to get moving?</h2>
+            <p>Tell us about your building and we’ll call you back within one business day.</p>
+          </div>
+          <Link className="ap-btn ap-btn--primary" to="/contact">Contact us</Link>
+        </div>
+      </section>
+
       <footer className="ap-footer">
         <AppLogo size={28} rounded={false} />
+        <div className="ap-footer__contact">
+          <a href="tel:+918971974009">8971974009</a>
+          <a href="mailto:apolloelevators1@gmail.com">apolloelevators1@gmail.com</a>
+        </div>
         <span>© {new Date().getFullYear()} Apollo Elevator. All rights reserved.</span>
       </footer>
     </div>

@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { api } from "../services/api";
+import PublicNav from "../components/PublicNav";
 import AppLogo from "../components/AppLogo";
 import "../components/AppLogo.css";
 import "./ContactPage.css";
@@ -26,11 +28,13 @@ const initialForm = {
 };
 
 export default function ContactPage() {
+  const location = useLocation();
+  const inquiryType = location.state?.inquiryType === "QUOTE" ? "QUOTE" : "CONTACT";
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const [toast, setToast] = useState(null);
 
   const update = (field) => (e) => {
     const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
@@ -41,6 +45,7 @@ export default function ContactPage() {
     const next = {};
     if (!form.name.trim()) next.name = "Enter your name.";
     if (!form.phone.trim()) next.phone = "Enter a phone number we can reach you on.";
+    else if (form.phone.replace(/\D/g, "").length < 10) next.phone = "Enter a valid 10-digit phone number.";
     if (!form.city.trim()) next.city = "Enter your city.";
     if (!form.policyAccepted) next.policyAccepted = "Please accept the privacy policy.";
     setErrors(next);
@@ -51,31 +56,39 @@ export default function ContactPage() {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
-    setSubmitError("");
+    setToast(null);
     api.submitEnquiry({
-      name: form.name.trim(),
-      phone: form.phone.trim(),
+      inquiryType,
+      fullName: form.name.trim(),
+      phoneNumber: form.phone.trim(),
       email: form.email.trim(),
       city: form.city.trim(),
-      interest: form.interest,
+      requirementType: form.interest,
       message: form.message.trim(),
-      updatesOptIn: form.updatesOptIn,
-    }).then(() => {
-      setSubmitted(true);
-    }).catch((err) => {
-      setSubmitError(err.message || "We could not send your enquiry right now.");
-    }).finally(() => {
-      setSubmitting(false);
-    });
+      consentAccepted: form.policyAccepted,
+      sourcePage: "contact",
+    })
+      .then(() => {
+        setSubmitted(true);
+        setToast({ type: "success", text: "Enquiry submitted successfully." });
+      })
+      .catch((err) => {
+        setToast({ type: "error", text: err.message || "We could not send your enquiry right now." });
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   if (submitted) {
     return (
       <div className="cp-page">
+        <PublicNav />
         <div className="cp-confirm">
           <AppLogo size={48} />
           <h1>Thanks, {form.name.split(" ")[0]}.</h1>
           <p>We’ve got your enquiry and someone from Apollo Elevator will call you on {form.phone} within a business day.</p>
+          <Link to="/" className="cp-confirm__home">Back to home</Link>
         </div>
       </div>
     );
@@ -83,62 +96,13 @@ export default function ContactPage() {
 
   return (
     <div className="cp-page">
+      <PublicNav />
+      {toast && <div className={`cp-toast cp-toast--${toast.type}`}>{toast.text}</div>}
       <div className="cp-grid">
-        <div className="cp-intro">
-          <AppLogo size={44} />
-          <h1>Get a quote for your lift.</h1>
-          <p>Tell us a little about your home or building and what you're looking for. We’ll call you back within one business day.</p>
-          <div className="cp-mapCard">
-            <div className="cp-mapCard__header">
-              <div>
-                <h2>Our location</h2>
-                <p>No. 14, Karihobana Halli, T.G. Palya, Bangalore – 560 058</p>
-              </div>
-              <a
-                className="cp-directions"
-                href="https://www.google.com/maps/dir/?api=1&destination=13.016339,77.483724"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Get Directions
-              </a>
-            </div>
-            <div className="cp-mapFrame" aria-label="Apollo Elevator location map">
-              <iframe
-                title="Apollo Elevator location"
-                src="https://www.google.com/maps?q=13.016339,77.483724&z=16&output=embed"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
-              />
-              <a
-                className="cp-mapPin"
-                href="https://www.google.com/maps/search/?api=1&query=13.016339,77.483724"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span className="cp-mapPin__dot" />
-                Apollo Elevator
-              </a>
-            </div>
-          </div>
-          <div className="cp-direct">
-            <div className="cp-direct__row">
-              <span className="cp-direct__label">Call us</span>
-              <a href="tel:+918971974009">8971974009</a>
-            </div>
-            <div className="cp-direct__row">
-              <span className="cp-direct__label">Email</span>
-              <a href="mailto:apolloelevators1@gmail.com">apolloelevators1@gmail.com</a>
-            </div>
-            <div className="cp-direct__row">
-              <span className="cp-direct__label">Visit</span>
-              <span>No. 14, Karihobana Halli, T.G. Palya, Bangalore – 560 058</span>
-            </div>
-          </div>
-        </div>
-
         <form className="cp-form" onSubmit={handleSubmit} noValidate>
+          <h1>Get a quote for your lift.</h1>
+          <p className="cp-form__intro">Tell us a little about your home or building and what you're looking for. We’ll call you back within one business day.</p>
+
           <div className="cp-form__row">
             <div className="cp-field">
               <label htmlFor="name">Name <span className="cp-required">*</span></label>
@@ -195,12 +159,64 @@ export default function ContactPage() {
             <span>I have read and accept the terms of the <a href="/privacy-policy" className="cp-link">Privacy Policy</a> <span className="cp-required">*</span></span>
           </label>
           {errors.policyAccepted && <span className="cp-error">{errors.policyAccepted}</span>}
-          {submitError && <span className="cp-error">{submitError}</span>}
 
           <button type="submit" className="cp-submit" disabled={submitting}>
             {submitting ? "Sending..." : "Request a callback"}
           </button>
         </form>
+
+        <div className="cp-intro">
+          <AppLogo size={44} />
+          <h2 className="cp-intro__heading">Contact details</h2>
+          <div className="cp-mapCard">
+            <div className="cp-mapCard__header">
+              <div>
+                <h2>Our location</h2>
+                <p>No. 14, Karihobana Halli, T.G. Palya, Bangalore – 560 058</p>
+              </div>
+              <a
+                className="cp-directions"
+                href="https://www.google.com/maps/dir/?api=1&destination=13.016339,77.483724"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Get Directions
+              </a>
+            </div>
+            <div className="cp-mapFrame" aria-label="Apollo Elevator location map">
+              <iframe
+                title="Apollo Elevator location"
+                src="https://www.google.com/maps?q=13.016339,77.483724&z=16&output=embed"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+              <a
+                className="cp-mapPin"
+                href="https://www.google.com/maps/search/?api=1&query=13.016339,77.483724"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="cp-mapPin__dot" />
+                Apollo Elevator
+              </a>
+            </div>
+          </div>
+          <div className="cp-direct">
+            <div className="cp-direct__row">
+              <span className="cp-direct__label">Call us</span>
+              <a href="tel:+918971974009">8971974009</a>
+            </div>
+            <div className="cp-direct__row">
+              <span className="cp-direct__label">Email</span>
+              <a href="mailto:apolloelevators1@gmail.com">apolloelevators1@gmail.com</a>
+            </div>
+            <div className="cp-direct__row">
+              <span className="cp-direct__label">Visit</span>
+              <span>No. 14, Karihobana Halli, T.G. Palya, Bangalore – 560 058</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

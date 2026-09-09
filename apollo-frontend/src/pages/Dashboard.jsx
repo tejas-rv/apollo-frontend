@@ -1,5 +1,5 @@
 import React,{useEffect,useMemo,useState} from "react";
-import {Users,Building2,CalendarClock,AlertCircle,TrendingUp,Clock,CheckCircle,XCircle,ArrowRight,IndianRupee} from "lucide-react";
+import {Users,Building2,CalendarClock,AlertCircle,TrendingUp,Clock,CheckCircle,XCircle,ArrowRight,IndianRupee,MessageSquare} from "lucide-react";
 import {Link} from "react-router-dom";
 import {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,PieChart,Pie,Cell,Legend} from "recharts";
 import {api} from "../services/api";
@@ -38,6 +38,9 @@ export default function Dashboard(){
   const [selYear,setSelYear]=useState(new Date().getFullYear());
   const [selMonth,setSelMonth]=useState(new Date().getMonth());
 
+  const [recentEnquiries,setRecentEnquiries]=useState([]);
+  const [newEnquiryCount,setNewEnquiryCount]=useState(0);
+
   // fetch all customers (up to 500)
   useEffect(()=>{
     setLoading(true);
@@ -45,6 +48,12 @@ export default function Dashboard(){
       setAllCustomers(d.content||[]);
       setLoading(false);
     }).catch(e=>{setErr(e.message);setLoading(false)});
+  },[]);
+
+  // fetch recent enquiries for the dashboard widget
+  useEffect(()=>{
+    api.adminEnquiries({page:0,size:6}).then(d=>setRecentEnquiries(d.content||[])).catch(()=>{});
+    api.adminEnquiries({status:"NEW",page:0,size:1}).then(d=>setNewEnquiryCount(d.totalElements||0)).catch(()=>{});
   },[]);
 
   const allAmcs=useMemo(()=>
@@ -145,7 +154,7 @@ export default function Dashboard(){
         <h1>Dashboard</h1>
         <p className="muted">Apollo Elevator · service operations at a glance</p>
       </div>
-      <Link className="primary" to="/customers/new">+ Add customer</Link>
+      <Link className="primary" to="/app/customers/new">+ Add customer</Link>
     </div>
 
     {err&&<div className="alert error">{err}</div>}
@@ -179,6 +188,7 @@ export default function Dashboard(){
       <KpiCard icon={Clock} label="Services due (30d)" value={kpis.svcDue30} sub="Next service approaching" color="amber"/>
       <KpiCard icon={XCircle} label="Expired AMCs" value={kpis.expired} sub="All time" color="red"/>
       <KpiCard icon={Users} label="Total customers" value={allCustomers.length} sub="All records" color="blue"/>
+      <KpiCard icon={MessageSquare} label="New enquiries" value={newEnquiryCount} sub="Awaiting response" color="amber"/>
     </div>
 
     {/* ── Charts row ── */}
@@ -223,11 +233,37 @@ export default function Dashboard(){
       </div>
     </div>
 
+    {/* ── Recent enquiries ── */}
+    <div className="panel">
+      <div className="panel-head">
+        <div><h2>Recent enquiries</h2><span className="muted">Contact & quote requests from the website</span></div>
+        <Link to="/app/enquiries" style={{display:"flex",alignItems:"center",gap:5,color:"var(--blue)",textDecoration:"none",fontSize:13}}>View all <ArrowRight size={16}/></Link>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Phone</th><th>Type</th><th>Status</th><th>Created</th><th></th></tr></thead>
+          <tbody>
+            {recentEnquiries.map(i=>
+              <tr key={i.id}>
+                <td><b>{i.fullName}</b><small>{i.email||"—"}</small></td>
+                <td>{i.phoneNumber}</td>
+                <td>{i.inquiryType}</td>
+                <td><span className={`status ${i.status==="NEW"?"pending":i.status==="CLOSED"?"active":""}`}>{i.status?.replace("_"," ")}</span></td>
+                <td>{i.createdAt?new Date(i.createdAt).toLocaleDateString():"—"}</td>
+                <td><Link className="table-link" to="/app/enquiries">Respond</Link></td>
+              </tr>
+            )}
+            {!recentEnquiries.length&&<tr><td colSpan="6" className="empty">No enquiries yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     {/* ── Recent customers ── */}
     <div className="panel">
       <div className="panel-head">
         <div><h2>Recent customers</h2><span className="muted">Latest records</span></div>
-        <Link to="/customers" style={{display:"flex",alignItems:"center",gap:5,color:"var(--blue)",textDecoration:"none",fontSize:13}}>View all <ArrowRight size={16}/></Link>
+        <Link to="/app/customers" style={{display:"flex",alignItems:"center",gap:5,color:"var(--blue)",textDecoration:"none",fontSize:13}}>View all <ArrowRight size={16}/></Link>
       </div>
       <div className="table-wrap">
         <table>
@@ -241,7 +277,7 @@ export default function Dashboard(){
                 <td>{c.city||"—"}</td>
                 <td>{c.lifts?.length||0}</td>
                 <td><span className={`status ${activeAmc?"active":"pending"}`}>{activeAmc}</span></td>
-                <td><Link className="table-link" to={`/customers/${c.id}`}>Open</Link></td>
+                <td><Link className="table-link" to={`/app/customers/${c.id}`}>Open</Link></td>
               </tr>;
             })}
             {!allCustomers.length&&<tr><td colSpan="6" className="empty">No customers found.</td></tr>}
@@ -275,7 +311,7 @@ function DueTable({rows,dateKey,emptyMsg}){
         const d=parseDate(a[dateKey]);
         const days=d?Math.round((d-today)/86400000):null;
         return <tr key={i}>
-          <td><Link className="table-link" to={`/customers/${a.customerId}`}><b>{a.customerName}</b></Link></td>
+          <td><Link className="table-link" to={`/app/customers/${a.customerId}`}><b>{a.customerName}</b></Link></td>
           <td><small>{a.contractNumber||"—"}</small></td>
           <td>{d?d.toLocaleDateString("en-IN"):"—"}</td>
           <td><span className={`status ${days<=7?"expired":days<=14?"pending":"active"}`}>{days!=null?`${days}d`:"—"}</span></td>

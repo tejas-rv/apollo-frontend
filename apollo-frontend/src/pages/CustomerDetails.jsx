@@ -55,7 +55,7 @@ export default function CustomerDetails() {
     <section className="page">
       <div className="page-head">
         <div>
-          <button className="back" onClick={() => nav("/customers")}>
+          <button className="back" onClick={() => nav("/app/customers")}>
             <ArrowLeft size={16} /> Customers
           </button>
           <span className="eyebrow">CUSTOMER</span>
@@ -63,12 +63,12 @@ export default function CustomerDetails() {
           <p className="muted">{val(c.customerCode)} · {val(c.mobileNumber)}</p>
         </div>
         <div className="head-actions">
-          <Link className="secondary" to={`/customers/${id}/edit`}>Edit</Link>
+          <Link className="secondary" to={`/app/customers/${id}/edit`}>Edit</Link>
           {amcs.length > 0 && (
             <button className="secondary" onClick={pdf}><Download size={17} /> AMC PDF</button>
           )}
           {amcs.length > 0 && (
-            <Link className="primary" to={`/bills?customerId=${id}&customerName=${encodeURIComponent(c.customerName)}`}>
+            <Link className="primary" to={`/app/bills?customerId=${id}&customerName=${encodeURIComponent(c.customerName)}`}>
               <Receipt size={17} /> Generate Bill
             </Link>
           )}
@@ -100,7 +100,7 @@ export default function CustomerDetails() {
       <div className="panel">
         <div className="panel-head">
           <h2>Elevator &amp; AMC</h2>
-          <Link className="secondary small" to="/notifications"><Mail size={15} /> Notifications</Link>
+          <Link className="secondary small" to="/app/notifications"><Mail size={15} /> Notifications</Link>
         </div>
 
         {lifts.map((l, i) => {
