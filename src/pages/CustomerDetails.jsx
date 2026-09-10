@@ -1,16 +1,38 @@
-import React, { useEffect, useState } from "react";
+import { ArrowLeft, Download, Mail, Receipt } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Download, Mail, ArrowLeft, Receipt } from "lucide-react";
 import { api } from "../services/api";
 
 const NA = "NA";
 const val = (v) => (v === null || v === undefined || v === "" ? NA : v);
+const amcTypeTone = (value) => {
+  const type = String(value || "").toLowerCase();
+  if (type.includes("gold")) return "gold";
+  if (type.includes("silver")) return "silver";
+  if (type.includes("platinum")) return "platinum";
+  return "default";
+};
 const fmtMotor = (m) =>
-  !m ? null : [m.kw, m.amps, m.speed, m.voltage, m.frequency, m.noOfPoles && `${m.noOfPoles} poles`].filter(Boolean).join(" · ");
+  !m
+    ? null
+    : [
+        m.kw,
+        m.amps,
+        m.speed,
+        m.voltage,
+        m.frequency,
+        m.noOfPoles && `${m.noOfPoles} poles`,
+      ]
+        .filter(Boolean)
+        .join(" · ");
 const fmtPulley = (p) =>
   !p ? null : `Dia ${val(p.diameter)} · Grooves ${val(p.noOfGrooves)}`;
 const fmtBattery = (b) =>
-  !b ? null : [b.make, b.voltage, b.noOfBatteries && `${b.noOfBatteries} batteries`].filter(Boolean).join(" · ");
+  !b
+    ? null
+    : [b.make, b.voltage, b.noOfBatteries && `${b.noOfBatteries} batteries`]
+        .filter(Boolean)
+        .join(" · ");
 
 function Row({ label, value }) {
   return (
@@ -28,7 +50,10 @@ export default function CustomerDetails() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    api.customer(id).then(setC).catch((e) => setError(e.message));
+    api
+      .customer(id)
+      .then(setC)
+      .catch((e) => setError(e.message));
   }, [id]);
 
   async function pdf() {
@@ -45,8 +70,18 @@ export default function CustomerDetails() {
     }
   }
 
-  if (error) return <section className="page"><div className="alert error">{error}</div></section>;
-  if (!c) return <section className="page"><div className="loading">Loading…</div></section>;
+  if (error)
+    return (
+      <section className="page">
+        <div className="alert error">{error}</div>
+      </section>
+    );
+  if (!c)
+    return (
+      <section className="page">
+        <div className="loading">Loading…</div>
+      </section>
+    );
 
   const lifts = c.lifts || [];
   const amcs = lifts.flatMap((l) => l.amcDetails || []);
@@ -60,15 +95,24 @@ export default function CustomerDetails() {
           </button>
           <span className="eyebrow">CUSTOMER</span>
           <h1>{c.customerName}</h1>
-          <p className="muted">{val(c.customerCode)} · {val(c.mobileNumber)}</p>
+          <p className="muted">
+            {val(c.customerCode)} · {val(c.mobileNumber)}
+          </p>
         </div>
         <div className="head-actions">
-          <Link className="secondary" to={`/app/customers/${id}/edit`}>Edit</Link>
+          <Link className="secondary" to={`/app/customers/${id}/edit`}>
+            Edit
+          </Link>
           {amcs.length > 0 && (
-            <button className="secondary" onClick={pdf}><Download size={17} /> AMC PDF</button>
+            <button className="secondary" onClick={pdf}>
+              <Download size={17} /> AMC PDF
+            </button>
           )}
           {amcs.length > 0 && (
-            <Link className="primary" to={`/app/bills?customerId=${id}&customerName=${encodeURIComponent(c.customerName)}`}>
+            <Link
+              className="primary"
+              to={`/app/bills?customerId=${id}&customerName=${encodeURIComponent(c.customerName)}`}
+            >
               <Receipt size={17} /> Generate Bill
             </Link>
           )}
@@ -90,9 +134,20 @@ export default function CustomerDetails() {
         <div className="panel">
           <h2>Overview</h2>
           <div className="mini-stats">
-            <div><strong>{lifts.length}</strong><span>Lifts</span></div>
-            <div><strong>{amcs.length}</strong><span>AMC contracts</span></div>
-            <div><strong>{amcs.filter((a) => a.status === "ACTIVE").length}</strong><span>Active</span></div>
+            <div>
+              <strong>{lifts.length}</strong>
+              <span>Lifts</span>
+            </div>
+            <div>
+              <strong>{amcs.length}</strong>
+              <span>AMC contracts</span>
+            </div>
+            <div>
+              <strong>
+                {amcs.filter((a) => a.status === "ACTIVE").length}
+              </strong>
+              <span>Active</span>
+            </div>
           </div>
         </div>
       </div>
@@ -100,7 +155,9 @@ export default function CustomerDetails() {
       <div className="panel">
         <div className="panel-head">
           <h2>Elevator &amp; AMC</h2>
-          <Link className="secondary small" to="/app/notifications"><Mail size={15} /> Notifications</Link>
+          <Link className="secondary small" to="/app/notifications">
+            <Mail size={15} /> Notifications
+          </Link>
         </div>
 
         {lifts.map((l, i) => {
@@ -111,8 +168,13 @@ export default function CustomerDetails() {
             <div className="detail-lift" key={l.id || i}>
               <div className="lift-title">
                 <div>
-                  <b>Lift {i + 1} · {val(l.brand)}</b>
-                  <span>{val(l.liftType)} · {val(l.driveType)} · {val(l.numberOfFloors)} floors</span>
+                  <b>
+                    Lift {i + 1} · {val(l.brand)}
+                  </b>
+                  <span>
+                    {val(l.liftType)} · {val(l.driveType)} ·{" "}
+                    {val(l.numberOfFloors)} floors
+                  </span>
                 </div>
                 <span className="badge">S/N {val(l.serialNumber)}</span>
               </div>
@@ -120,7 +182,10 @@ export default function CustomerDetails() {
               <dl className="lift-specs">
                 <Row label="Lift model" value={l.liftModel} />
                 <Row label="Installation type" value={l.installationType} />
-                <Row label="Year of installation" value={l.yearOfInstallation} />
+                <Row
+                  label="Year of installation"
+                  value={l.yearOfInstallation}
+                />
                 <Row label="Capacity (kg)" value={l.capacityInKg} />
                 <Row label="Capacity (persons)" value={l.capacityInPersons} />
                 <Row label="Door type" value={l.doorType} />
@@ -137,15 +202,24 @@ export default function CustomerDetails() {
                 <summary>Machine details</summary>
                 <dl className="lift-specs">
                   <Row label="Manufactured by" value={md.manufacturedBy} />
-                  <Row label="Year of manufacture" value={md.yearOfManufacture} />
+                  <Row
+                    label="Year of manufacture"
+                    value={md.yearOfManufacture}
+                  />
                   <Row label="Machine type" value={md.machineType} />
                   <Row label="No. of grooves" value={md.noOfGrooves} />
-                  <Row label="Friction sheave dia" value={md.frictionSheaveDiameter} />
+                  <Row
+                    label="Friction sheave dia"
+                    value={md.frictionSheaveDiameter}
+                  />
                   <Row label="No. of ropes" value={md.noOfRopes} />
                   <Row label="Rope dia (mm)" value={md.diaOfTheRopeMm} />
                   <Row label="Rope length (mm)" value={md.lengthOfTheRopeMm} />
                   {md.isDeflectorPulley && (
-                    <Row label="Deflector pulley" value={fmtPulley(md.deflectorPulley)} />
+                    <Row
+                      label="Deflector pulley"
+                      value={fmtPulley(md.deflectorPulley)}
+                    />
                   )}
                   <Row label="Main motor" value={fmtMotor(md.mainMotor)} />
                   <Row label="Roping" value={md.roping} />
@@ -169,12 +243,27 @@ export default function CustomerDetails() {
                 <div className="amc" key={a.id || a.contractNumber}>
                   <div>
                     <b>{val(a.contractNumber)}</b>
-                    <span>{val(a.contractType)} · {val(a.startDate)} → {val(a.endDate)}</span>
+                    <div
+                      className={`amc-type amc-type--${amcTypeTone(a.contractType)}`}
+                    >
+                      {val(a.contractType)}
+                    </div>
                     <span>
-                      Amount {val(a.amcAmount)} · {val(a.paymentFrequency)} · Next payment {val(a.nextPaymentDate)} · Next service {val(a.nextServiceDate)} · Services {val(a.completedServices)}/{val(a.totalServices)}
+                      {val(a.contractType)} · {val(a.startDate)} →{" "}
+                      {val(a.endDate)}
+                    </span>
+                    <span>
+                      Amount {val(a.amcAmount)} · {val(a.paymentFrequency)} ·
+                      Next payment {val(a.nextPaymentDate)} · Next service{" "}
+                      {val(a.nextServiceDate)} · Services{" "}
+                      {val(a.completedServices)}/{val(a.totalServices)}
                     </span>
                   </div>
-                  <span className={`status ${String(a.status).toLowerCase()}`}>{val(a.status)}</span>
+                  <span
+                    className={`amc-status amc-status--${String(a.status || "").toLowerCase()}`}
+                  >
+                    {val(a.status)}
+                  </span>
                 </div>
               ))}
               {(!l.amcDetails || l.amcDetails.length === 0) && (
@@ -183,7 +272,9 @@ export default function CustomerDetails() {
             </div>
           );
         })}
-        {!lifts.length && <div className="empty-box">No lift details recorded.</div>}
+        {!lifts.length && (
+          <div className="empty-box">No lift details recorded.</div>
+        )}
       </div>
     </section>
   );

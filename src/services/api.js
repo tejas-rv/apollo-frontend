@@ -7,22 +7,35 @@ const CACHE_TTL = 60_000; // 60 seconds
 function cached(key, fetchFn) {
   const hit = _cache.get(key);
   if (hit && Date.now() - hit.ts < CACHE_TTL) return Promise.resolve(hit.data);
-  return fetchFn().then(data => { _cache.set(key, {data, ts: Date.now()}); return data; });
+  return fetchFn().then((data) => {
+    _cache.set(key, { data, ts: Date.now() });
+    return data;
+  });
 }
 export function invalidateCache(prefix) {
-  _cache.forEach((_, k) => { if (!prefix || k.startsWith(prefix)) _cache.delete(k); });
+  _cache.forEach((_, k) => {
+    if (!prefix || k.startsWith(prefix)) _cache.delete(k);
+  });
 }
 
-const NO_AUTO_LOGOUT_PATHS = ["/api/auth/login", "/api/auth/refresh", "/api/auth/change-password"];
+const NO_AUTO_LOGOUT_PATHS = [
+  "/api/auth/login",
+  "/api/auth/refresh",
+  "/api/auth/change-password",
+];
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("accessToken");
   const headers = new Headers(options.headers || {});
-  if (options.body && !(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
+  if (options.body && !(options.body instanceof FormData))
+    headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  const res = await fetch(`${BASE}${path}`, {...options, headers});
+  const res = await fetch(`${BASE}${path}`, { ...options, headers });
   const type = res.headers.get("content-type") || "";
-  if (res.status === 401 && !NO_AUTO_LOGOUT_PATHS.some(p => path.startsWith(p))) {
+  if (
+    res.status === 401 &&
+    !NO_AUTO_LOGOUT_PATHS.some((p) => path.startsWith(p))
+  ) {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     window.location.href = "/login";
@@ -31,8 +44,13 @@ async function request(path, options = {}) {
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
     try {
-      if (type.includes("application/json")) { const e = await res.json(); message = e.message || e.error || message; }
-      else { const text = await res.text(); if (text) message = text; }
+      if (type.includes("application/json")) {
+        const e = await res.json();
+        message = e.message || e.error || message;
+      } else {
+        const text = await res.text();
+        if (text) message = text;
+      }
     } catch {}
     throw new Error(message);
   }
@@ -43,43 +61,164 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  login: body => request("/api/auth/login", {method:"POST", body:JSON.stringify(body)}),
+  login: (body) =>
+    request("/api/auth/login", { method: "POST", body: JSON.stringify(body) }),
   me: () => request("/api/auth/me"),
-  refresh: body => request("/api/auth/refresh", {method:"POST", body:JSON.stringify(body)}),
-  customers: (page=0,size=20) => cached(`customers:${page}:${size}`, ()=>request(`/api/admin/customers/getAllCustomers?page=${page}&size=${size}`)),
-  searchCustomers: (query="",page=0,size=20) => cached(`search:${query}:${page}:${size}`, ()=>request(`/api/admin/customers/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`)),
-  customer: id => cached(`customer:${id}`, ()=>request(`/api/admin/customers/getCustomerUsingId/${id}`)),
-  createCustomer: body => request("/api/admin/customers/create",{method:"POST",body:JSON.stringify(body)}),
-  updateCustomer: (id,body) => request(`/api/admin/customers/updateCustomerUsingId/${id}`,{method:"PUT",body:JSON.stringify(body)}),
-  deleteCustomer: id => request(`/api/admin/customers/deleteCustomerUsingId/${id}`,{method:"DELETE"}),
-  updateServiceHistory: (id,body) => request(`/api/admin/customers/amc-contracts/${id}/service-history`,{method:"PUT",body:JSON.stringify(body)}),
-  contractPdf: id => request(`/api/admin/documents/customers/${id}?documentType=AMC_CONTRACT`),
-  billPreview: (id, documentType) => request(`/api/admin/documents/customers/${id}/bill-preview?documentType=${documentType}`),
-  generateBillPdf: (documentType, body) => request(`/api/admin/documents/bills/generate?documentType=${documentType}`,{method:"POST",body:JSON.stringify(body)}),
-  sendBillEmail: (documentType, to, body) => request(`/api/admin/documents/bills/send-email?documentType=${documentType}&to=${encodeURIComponent(to)}`,{method:"POST",body:JSON.stringify(body)}),
-  sendBillWhatsapp: (documentType, phone, body) => request(`/api/admin/documents/bills/send-whatsapp?documentType=${documentType}&phone=${encodeURIComponent(phone)}`,{method:"POST",body:JSON.stringify(body)}),
-  email: body => request("/api/admin/notifications/email",{method:"POST",body:JSON.stringify(body)}),
-  contractEmail: body => request("/api/admin/notifications/email/contract",{method:"POST",body:JSON.stringify(body)}),
-  whatsapp: body => request("/api/admin/notifications/whatsapp",{method:"POST",body:JSON.stringify(body)}),
-  contractWhatsapp: body => request("/api/admin/notifications/whatsapp/contract",{method:"POST",body:JSON.stringify(body)}),
-  refreshSecurity: () => request("/api/admin/security/config/refresh",{method:"POST"}),
-  changePassword: body => request("/api/auth/change-password",{method:"PUT",body:JSON.stringify(body)}),
-  submitEnquiry: body => request("/api/public/enquiries",{method:"POST",body:JSON.stringify(body)}),
-  adminEnquiries: (params={}) => {
-    const q = new URLSearchParams(Object.entries(params).filter(([,v])=>v!==""&&v!=null));
+  refresh: (body) =>
+    request("/api/auth/refresh", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  customers: (page = 0, size = 20) =>
+    cached(`customers:${page}:${size}`, () =>
+      request(`/api/admin/customers/getAllCustomers?page=${page}&size=${size}`),
+    ),
+  searchCustomers: (query = "", page = 0, size = 20) =>
+    cached(`search:${query}:${page}:${size}`, () =>
+      request(
+        `/api/admin/customers/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`,
+      ),
+    ),
+  customer: (id) =>
+    cached(`customer:${id}`, () =>
+      request(`/api/admin/customers/getCustomerUsingId/${id}`),
+    ),
+  createCustomer: (body) =>
+    request("/api/admin/customers/create", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateCustomer: (id, body) =>
+    request(`/api/admin/customers/updateCustomerUsingId/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  deleteCustomer: (id) =>
+    request(`/api/admin/customers/deleteCustomerUsingId/${id}`, {
+      method: "DELETE",
+    }),
+  updateServiceHistory: (id, body) =>
+    request(`/api/admin/customers/amc-contracts/${id}/service-history`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  contractPdf: (id) =>
+    request(`/api/admin/documents/customers/${id}?documentType=AMC_CONTRACT`),
+  billPreview: (id, documentType) =>
+    request(
+      `/api/admin/documents/customers/${id}/bill-preview?documentType=${documentType}`,
+    ),
+  generateBillPdf: (documentType, body) =>
+    request(
+      `/api/admin/documents/bills/generate?documentType=${documentType}`,
+      { method: "POST", body: JSON.stringify(body) },
+    ),
+  sendBillEmail: (documentType, to, body) =>
+    request(
+      `/api/admin/documents/bills/send-email?documentType=${documentType}&to=${encodeURIComponent(to)}`,
+      { method: "POST", body: JSON.stringify(body) },
+    ),
+  sendBillWhatsapp: (documentType, phone, body) =>
+    request(
+      `/api/admin/documents/bills/send-whatsapp?documentType=${documentType}&phone=${encodeURIComponent(phone)}`,
+      { method: "POST", body: JSON.stringify(body) },
+    ),
+  email: (body) =>
+    request("/api/admin/notifications/email", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  contractEmail: (body) =>
+    request("/api/admin/notifications/email/contract", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  whatsapp: (body) =>
+    request("/api/admin/notifications/whatsapp", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  contractWhatsapp: (body) =>
+    request("/api/admin/notifications/whatsapp/contract", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  refreshSecurity: () =>
+    request("/api/admin/security/config/refresh", { method: "POST" }),
+  changePassword: (body) =>
+    request("/api/auth/change-password", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  submitEnquiry: (body) =>
+    request("/api/public/enquiries", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  adminEnquiries: (params = {}) => {
+    const q = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== "" && v != null),
+    );
     return request(`/api/admin/enquiries?${q.toString()}`);
   },
-  adminEnquiry: id => request(`/api/admin/enquiries/${id}`),
-  updateEnquiryStatus: (id,status) => request(`/api/admin/enquiries/${id}/status`,{method:"PUT",body:JSON.stringify({status})}),
+  adminEnquiry: (id) => request(`/api/admin/enquiries/${id}`),
+  updateEnquiryStatus: (id, status) =>
+    request(`/api/admin/enquiries/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    }),
+  convertEnquiryToWorkOrder: (id) =>
+    request(`/api/admin/enquiries/${id}/convert-to-work-order`, {
+      method: "POST",
+    }),
+  convertEnquiryToCustomer: (id, body) =>
+    request(`/api/admin/enquiries/${id}/convert-to-customer`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  quotations: (params = {}) => {
+    const q = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== "" && v != null),
+    );
+    return request(`/api/admin/quotations?${q.toString()}`);
+  },
+  createQuotation: (body) =>
+    request("/api/admin/quotations", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateQuotationStatus: (id, status) =>
+    request(`/api/admin/quotations/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    }),
   // Engineer portal
   engineerDashboard: () => request("/api/engineer/dashboard"),
-  engineerCustomers: (query, page=0, size=20) => query
-    ? cached(`eng-search:${query}:${page}`, ()=>request(`/api/engineer/customers?query=${encodeURIComponent(query)}&page=${page}&size=${size}`))
-    : cached(`eng-customers:${page}:${size}`, ()=>request(`/api/engineer/customers?page=${page}&size=${size}`)),
-  engineerCustomer: id => cached(`eng-customer:${id}`, ()=>request(`/api/engineer/customers/${id}`)),
-  engineerChecklistTemplate: () => cached("eng-checklist", ()=>request("/api/engineer/service-reports/checklist-template")),
-  engineerMyReports: (page=0, size=20) => request(`/api/engineer/service-reports?page=${page}&size=${size}`),
-  engineerReport: id => request(`/api/engineer/service-reports/${id}`),
-  engineerSubmitReport: body => request("/api/engineer/service-reports", {method:"POST", body:JSON.stringify(body)}),
-  engineerReportPdf: id => request(`/api/engineer/service-reports/${id}/pdf`),
+  engineerCustomers: (query, page = 0, size = 20) =>
+    query
+      ? cached(`eng-search:${query}:${page}`, () =>
+          request(
+            `/api/engineer/customers?query=${encodeURIComponent(query)}&page=${page}&size=${size}`,
+          ),
+        )
+      : cached(`eng-customers:${page}:${size}`, () =>
+          request(`/api/engineer/customers?page=${page}&size=${size}`),
+        ),
+  engineerCustomer: (id) =>
+    cached(`eng-customer:${id}`, () =>
+      request(`/api/engineer/customers/${id}`),
+    ),
+  engineerChecklistTemplate: () =>
+    cached("eng-checklist", () =>
+      request("/api/engineer/service-reports/checklist-template"),
+    ),
+  engineerMyReports: (page = 0, size = 20) =>
+    request(`/api/engineer/service-reports?page=${page}&size=${size}`),
+  engineerReport: (id) => request(`/api/engineer/service-reports/${id}`),
+  engineerSubmitReport: (body) =>
+    request("/api/engineer/service-reports", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  engineerReportPdf: (id) => request(`/api/engineer/service-reports/${id}/pdf`),
 };
