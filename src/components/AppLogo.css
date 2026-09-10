@@ -1,0 +1,14 @@
+.app-logo{display:flex;align-items:center;gap:12px;--logo-ink:#0a4da6;--logo-title:inherit;--logo-sub:#6d7785}
+.app-logo-mark{width:var(--logo-size);height:var(--logo-size);border-radius:var(--logo-radius,16px);flex-shrink:0;color:var(--logo-ink);overflow:visible}
+.app-logo-copy b,.app-logo-copy span{display:block}
+.app-logo-copy b{letter-spacing:2px;font-size:calc(var(--logo-size) * .25);line-height:1;color:var(--logo-title)}
+.app-logo-copy span{margin-top:4px;color:var(--logo-sub);font-size:calc(var(--logo-size) * .16)}
+
+/* Light mark for dark backgrounds: explicit via tone="light" ... */
+.app-logo--light{--logo-ink:#fff;--logo-title:#fff;--logo-sub:rgba(255,255,255,.72)}
+
+/* ... or automatically inside known dark containers. */
+.sidebar .app-logo,
+.ap-footer .app-logo,
+.ap-hero .app-logo,
+.ap-cta .app-logo{--logo-ink:#fff;--logo-title:#fff;--logo-sub:rgba(255,255,255,.72)}

@@ -1,4 +1,4 @@
-# Apollo Elevators Frontend
+# Apollo Elevator Frontend
 
 React + Vite + JSX frontend mapped to the supplied Spring Boot backend.
 
@@ -25,7 +25,7 @@ The frontend is configured to avoid browser CORS during local development.
 Do **not** set `VITE_API_BASE_URL=http://localhost:8080` for the Vite dev server.
 
 Instead:
-- Browser requests go to `http://localhost:5173/api/...`
+- Browser requests go to `http://localhost:5174/api/...`
 - Vite proxies `/api` to `http://localhost:8080`
 - Spring Boot therefore receives the request server-to-server and the browser does not enforce cross-origin CORS.
 
