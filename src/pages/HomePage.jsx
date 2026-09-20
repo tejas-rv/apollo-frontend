@@ -121,7 +121,7 @@ export default function HomePage() {
               <div className="ap-about__copy">
                 <span className="ap-section__eyebrow">About</span>
                 <h2>Built by engineers who have spent 40 years in the shaft.</h2>
-                <p>Founded in 2010, Apollo Elevator delivers reliable, world-class elevator solutions tailored for Indian buildings. Every system is designed and installed in strict compliance with EN-81 international standards as well as Indian norms, covering traction, hydraulic, MR, and MRL gear and gearless elevators. Our commitment ensures safety, efficiency, and dependable performance in every installation.</p>
+                <p>Founded in 2010, Apollo Elevator delivers reliable, world-class elevator solutions tailored for Indian buildings. Every system is customized, designed and installed in strict compliance with EN-81 international standards as well as Indian norms, covering traction, hydraulic, MR, and MRL gear and gearless elevators. Our commitment ensures safety, efficiency, and dependable performance in every installation.</p>
                 <p>The team is led by CEO T. Venkatesh, who brings over 40 years in the elevator industry, and a maintenance crew trained to keep drives and controls running with minimal downtime.</p>
               </div>
               <div className="ap-about__photo">
