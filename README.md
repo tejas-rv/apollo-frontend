@@ -1,34 +1,58 @@
-# Apollo Elevators Frontend
+# Apollo Elevators
 
-React + Vite + JSX frontend mapped to the supplied Spring Boot backend.
+Apollo Elevators is a React/Vite web application for elevator customer,
+contract, billing, enquiry, notification, and engineer service-report
+workflows. The UI consumes the Spring Boot API in `apollo-backend`.
 
-## Backend API used
-- `/api/auth/login`, `/api/auth/me`, `/api/auth/refresh`
-- `/api/admin/customers/*`
-- `/api/admin/documents/customers/{id}/amc-contract`
-- `/api/admin/notifications/*`
-- `/api/admin/security/config/refresh`
+## Requirements
 
-## Run
-1. Copy `.env.example` to `.env` and set `VITE_API_BASE_URL` if needed.
-2. `npm install`
-3. `npm run dev`
+- Node.js 20 or newer
+- npm
+- The backend running locally on port `8080` (see
+  [`apollo-backend/README.md`](apollo-backend/README.md))
 
-The frontend stores the backend JWT access/refresh tokens in localStorage and sends `Authorization: Bearer <token>` on protected calls.
+## Development
 
-The customer form covers the core customer/lift fields exposed by the backend; AMC/service-history editing can be added as a dedicated workflow if desired.
+```bash
+npm install
+npm run dev
+```
 
+Vite starts the application at `http://localhost:5173`. Requests to `/api`,
+`/swagger-ui`, `/v3`, and `/actuator` are proxied to the backend. Set
+`VITE_BACKEND_URL` in `.env` only when the backend is not at
+`http://localhost:8080`.
 
-## CORS / local development
+For a production build:
 
-The frontend is configured to avoid browser CORS during local development.
-Do **not** set `VITE_API_BASE_URL=http://localhost:8080` for the Vite dev server.
+```bash
+npm run build
+npm run preview
+```
 
-Instead:
-- Browser requests go to `http://localhost:5173/api/...`
-- Vite proxies `/api` to `http://localhost:8080`
-- Spring Boot therefore receives the request server-to-server and the browser does not enforce cross-origin CORS.
+## Application areas
 
-If your backend is actually on another port, change `VITE_BACKEND_URL` in `.env`.
+- Public home and contact pages
+- Admin dashboard, customer and lift management, billing, enquiries,
+  notifications, and security settings
+- Engineer dashboard, restricted customer views, and service reports
 
-For production, either serve the frontend from the same origin as the API or configure Spring Security CORS explicitly.
+Authentication uses the backend JWT endpoints. Access and refresh tokens are
+kept in browser local storage and are attached to protected API requests.
+Unauthorized responses clear the local session and return the user to login.
+
+## Project layout
+
+```text
+src/
+  components/       Shared public UI components
+  pages/            Public, admin, and engineer screens
+  services/api.js   Centralized HTTP client
+  services/auth.js  Session storage helpers
+public/             Logo and elevator imagery
+vite.config.js      Development proxy configuration
+```
+
+Do not commit `.env` files or tokens. The tracked frontend lives at the
+repository root; `apollo-backend` is a separate Git repository containing the
+API service.

@@ -1,0 +1,333 @@
+## Apollo Elevators — Website & ERP Overview + Structure
+
+A lead-generation website for Apollo Elevators (Bengaluru) that grows into a full Elevator Service Management System (ESMS) with Admin, Engineer, and Customer portals.
+
+Since you're coding this yourself with Spring Boot + Next.js + PostgreSQL, below is a clean overview and structure you can start from. No code — just the blueprint.
+
+---
+
+### High-Level Architecture
+
+```
+[ Next.js Frontend (Public + Admin + Portals) ]
+                 │  REST API (JSON, JWT)
+[ Spring Boot Modular Monolith ]
+                 │
+     PostgreSQL   +   S3/R2 (files)   +   SMTP (email)
+```
+
+Keep it a **modular monolith** first. Split into services only when traffic/team demands it.
+
+---
+
+### Site Map (Phase 1 – Marketing Website)
+
+- Home
+- About
+- Services
+  - Installation
+  - AMC
+  - Repair & Breakdown
+  - Modernization
+- Products
+  - Passenger / Home / Hospital / Freight / MRL / Capsule / Glass
+- Technology (Controllers, VVVF, ARD)
+- Industries We Serve
+- Projects / Gallery
+- Locations (SEO pages: Whitefield, Electronic City, HSR, Bellandur, etc.)
+- Blog
+- Testimonials
+- FAQ
+- Contact
+- Legal (Privacy, Terms, 404)
+
+Target ~40–50 pages for SEO reach.
+
+---
+
+### Frontend Structure (Next.js 15 + TS + Tailwind + shadcn/ui)
+
+```
+frontend/
+├── app/
+│   ├── (marketing)/
+│   │   ├── page.tsx                 // Home
+│   │   ├── about/
+│   │   ├── services/[slug]/
+│   │   ├── products/[slug]/
+│   │   ├── locations/[city]/
+│   │   ├── projects/
+│   │   ├── blog/[slug]/
+│   │   └── contact/
+│   ├── (admin)/
+│   │   └── admin/...                // Dashboard, Enquiries, CMS
+│   ├── (portal)/
+│   │   ├── engineer/...
+│   │   └── customer/...
+│   ├── api/                         // BFF routes if needed
+│   └── layout.tsx
+├── components/
+│   ├── ui/                          // shadcn primitives
+│   ├── marketing/                   // Hero, FeatureGrid, CTA
+│   ├── forms/                       // EnquiryForm, QuoteForm
+│   └── shared/                      // Navbar, Footer, WhatsAppFAB
+├── features/                        // enquiry, amc, complaint, etc.
+├── lib/                             // api client, auth, seo
+├── hooks/
+├── types/
+├── content/                         // MDX / static SEO content
+└── public/
+```
+
+Key libs: `react-hook-form`, `zod`, `framer-motion`, `lucide-react`, `next-seo`, `next-sitemap`.
+
+---
+
+### Backend Structure (Spring Boot 3.5.x / 4, Java 21)
+
+```
+backend/
+├── src/main/java/com/apollo/elevators/
+│   ├── ApolloElevatorsApplication.java
+│   ├── config/          // Security, CORS, OpenAPI, S3, Mail
+│   ├── common/          // BaseEntity, Auditing, Exceptions, DTOs
+│   ├── auth/            // JWT, Refresh, Roles
+│   ├── user/
+│   ├── customer/
+│   ├── building/
+│   ├── lift/
+│   ├── product/
+│   ├── service/         // Service catalog
+│   ├── enquiry/         // Contact form + lead pipeline
+│   ├── amc/
+│   ├── complaint/
+│   ├── visit/           // Service visits + reports
+│   ├── invoice/
+│   ├── payment/
+│   ├── blog/
+│   ├── gallery/
+│   ├── testimonial/
+│   ├── location/        // SEO location pages data
+│   ├── notification/    // Email/SMS/WhatsApp
+│   ├── storage/         // S3 signed URLs
+│   └── report/
+└── src/main/resources/
+    ├── application.yml
+    ├── application-dev.yml
+    └── application-prod.yml
+```
+
+Per-module layout: `controller/`, `service/`, `repository/`, `entity/`, `dto/`, `mapper/`.
+
+---
+
+### Database (PostgreSQL) — Core Entities
+
+- `users`, `roles`, `user_roles`
+- `customers`, `buildings`, `lifts`
+- `products`, `product_features`
+- `service_categories`, `services`
+- `enquiries`, `quotations`, `quotation_items`
+- `amc_contracts`, `amc_renewals`
+- `complaints`, `complaint_updates`
+- `service_visits`, `visit_checklist`, `visit_media`
+- `invoices`, `invoice_items`, `payments`
+- `blogs`, `blog_categories`, `gallery_items`, `testimonials`
+- `locations` (city/area pages)
+- `notifications`, `audit_logs`
+
+Relationships:
+`Customer → Building → Lift → AMC → ServiceVisit → Engineer`
+
+Use Flyway or Liquibase for migrations from day 1.
+
+---
+
+### Phase-by-Phase Roadmap
+
+**Phase 1 — Marketing Website (2 weeks)**
+- Public pages, SEO, sitemap, robots.txt, JSON-LD schema
+- Enquiry API + email + WhatsApp CTA
+- Deploy: Vercel (frontend) + Render/EC2 (backend) + Managed Postgres
+
+**Phase 2 — Admin Panel (3 weeks)**
+- JWT auth, roles (ADMIN, MANAGER)
+- Enquiry pipeline, Blog CMS, Gallery, Projects, Testimonials, SEO fields
+- Dashboard charts (leads, conversions)
+
+**Phase 3 — Service Management (4 weeks)**
+- Customers, Buildings, Lifts
+- AMC contracts + expiry reminders (Spring `@Scheduled`)
+- Complaints workflow
+- Service visits + invoices
+- Reports (AMC expiry, revenue, engineer perf)
+
+**Phase 4 — Engineer Portal (3 weeks)**
+- Engineer login, today's jobs
+- Digital checklist, before/after photos → S3
+- Customer + engineer signatures
+- Auto-generated PDF service report
+- GPS check-in/out
+
+**Phase 5 — Customer Portal (4 weeks)**
+- Customer login, lift & AMC dashboard
+- Raise/track complaints
+- Online AMC renewal + payment (Razorpay/Stripe)
+- Download invoices, certificates, reports
+- Email/WhatsApp notifications, feedback
+
+---
+
+### Cross-Cutting Concerns (Set Up Early)
+
+- **Security:** Spring Security + JWT + refresh tokens, BCrypt, method-level `@PreAuthorize`
+- **Validation:** Bean Validation (Jakarta) + global `@ControllerAdvice`
+- **API docs:** springdoc-openapi (Swagger UI)
+- **Logging:** SLF4J + Logback JSON logs
+- **Auditing:** `@CreatedBy`, `@LastModifiedBy`, `@CreatedDate`
+- **Testing:** JUnit 5, Testcontainers (Postgres), MockMvc
+- **CI/CD:** GitHub Actions → build, test, deploy
+- **Env config:** `application-{profile}.yml` + secrets via env vars
+
+---
+
+### SEO Essentials (don't skip)
+
+- Server-rendered pages (Next.js App Router default)
+- Unique meta title/description per page (stored in DB for location & product pages)
+- JSON-LD: `LocalBusiness`, `Service`, `Product`, `FAQPage`, `BreadcrumbList`
+- `sitemap.xml` auto-generated from DB (locations, blogs, products)
+- Fast LCP: `next/image`, lazy loading, no heavy sliders
+- Internal linking: products ↔ services ↔ locations
+
+---
+
+### Where to Start (Week 1 Checklist)
+
+1. Create two repos: `apollo-web` (Next.js) and `apollo-api` (Spring Boot).
+2. Spring Boot init: Web, Security, Data JPA, Validation, Mail, Actuator, Flyway, PostgreSQL driver, Lombok.
+3. Set up base entity, exception handler, JWT skeleton, `/api/v1/enquiries` endpoint.
+4. Next.js init: Tailwind, shadcn/ui, layout shell (Navbar, Footer, WhatsApp FAB).
+5. Build Home + Contact + one Product page + one Location page as templates.
+6. Wire enquiry form → Spring API → DB → email notification.
+7. Deploy early (even with 3 pages) to lock in the pipeline.
+
+---
+
+### Assumptions
+
+- You'll use your preferred stack (Next.js + Spring Boot + PostgreSQL), not the default React/FastAPI/Mongo — respected since you're coding it yourself.
+- Payments and WhatsApp Business API come in Phase 5, not day 1.
+- Single region hosting (India) is fine initially.
+
+### Open Questions
+
+- Do you want the admin panel inside the same Next.js app or a separate sub-domain (`admin.apolloelevators.in`)?
+- Any preference for payment gateway — Razorpay (India-first) or Stripe?
+- Do you want blogs as MDX (in repo) or DB-driven from Phase 1 itself?
+
+
+
+
+
+{
+	"id": 4,
+	"customerCode": "TEST-004",
+	"customerName": "Sheshadri V",
+	"mobileNumber": "7975744357",
+	"customerType": "INDIVIDUAL / CORPORATE / ASSOCIATION",
+	"clientRepresentative": [
+		{
+			"name": "",
+			"mobileNumber": ""
+		}
+	],
+	"email": "vsheshadri73@gmail.com",
+	"address": "#19, Nenapu, Behind Carmel Jyoti School, Beereshwara Nagar, Chunchaghatta road",
+	"city": "Bengaluru",
+	"state": "Karnataka",
+	"pincode": "560062",
+	"lifts": [
+		{
+			"id": 9,
+			"liftType": "PASSENGER / GOODS / DUMB WEIGHTER",
+			"driveType": "TRACTION-ROPE / TRACTION-BELT / HYDRAULIC",
+			"numberOfFloors": 5,
+			"capacityInKg": 680,
+			"capacityInPersons": 10,
+			"make": "Schindler Elevators",
+			"liftModel": "Schindler Test Model",
+			"installationType": "Machine Room",
+			"yearOfInstallation": 2020,
+			"doorType": "AUTO-TELESCOPIC-LHS,AUTO-TELESCOPIC-RHS,AUTO-CENTER-OPENING,MANUAL-SLIDING,MANUAL-IMPD",
+			"headerType": "Firmator, Genesis, TKP-131, PKS-6",
+			"machineDetails": {
+				"manufacturedBy": "Jhonson",
+				"yearOfManufacture": 2020,
+				"machineType": "GEARED / GEARLESS / HYDRAULIC",
+				"noOfGrooves": 4,
+				"frictionSheaveDiameter": 400,
+				"noOfRopes": 4,
+				"diaOfTheRopeMm": 8,
+				"lengthOfTheRopeMm": 25000,
+				"isDeflectorPulley": true,
+				"deflectorPulley": {
+					"diameter": 8,
+					"noOfGrooves": 4
+				},
+				"mainMotor": {
+					"kw": "735.5W / 1HP",
+					"amps": "10A",
+					"speed": "950rpm, 1440, 1600",
+					"voltage": "415V",
+					"frequency": "50Hz",
+					"noOfPoles": 8
+				},
+				"roping": "1:1, 2:1, 4:1"
+			},
+			"isOsgPresent": true,
+			"osg": {
+				"make": "Jhonson",
+				"diaOfTheRope": 8,
+				"ratedSpeed": 1.5,
+				"trippingSpeed": 1.5
+			},
+			"isUpsPresent": true,
+			"ups": {
+				"upsType": "",
+				"kva": 2.3,
+				"battery": {
+					"make": "",
+					"voltage": "12V/7AH",
+					"noOfBatteries": 4
+				}
+			},
+			"amcDetails": [
+				{
+					"id": 9,
+					"LM-Number": "012",
+					"status": "ACTIVE",
+					"startDate": "2020-01-01",
+					"endDate": "2026-12-31",
+					"servicePeriod": "onceinamonth / twice",
+					"contractType": "PLATINUM",
+					"amcAmount": 13980,
+					"paymentTerms": "Monthly/Quaterly/HalfYearly/Annual",
+					"paymentDate": "2027-08-22",
+					"peviousServiceDate": "2026-11-22",
+					"totalServices": 30,
+					"completedServices": 29,
+					"pendingServices": 1,
+					"serviceHistory": [
+						{
+							"id": 0,
+							"serviceDate": "2026-08-23",
+							"engineerName": "string",
+							"status": "SCHEDULED"
+						}
+					]
+				}
+			]
+		}
+	]
+}
