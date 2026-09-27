@@ -82,4 +82,16 @@ export const api = {
   engineerReport: id => request(`/api/engineer/service-reports/${id}`),
   engineerSubmitReport: body => request("/api/engineer/service-reports", {method:"POST", body:JSON.stringify(body)}),
   engineerReportPdf: id => request(`/api/engineer/service-reports/${id}/pdf`),
+  // Google Drive documents
+  driveGenerateCustomerDocuments: customerId => request(`/api/google-drive/customer-documents/${customerId}`,{method:"POST"}),
+  driveListFiles: (customerId, category) => request(`/api/google-drive/files?customerId=${customerId}&category=${category}`),
+  driveFileMetadata: fileId => request(`/api/google-drive/files/${fileId}`),
+  driveDownloadFile: fileId => request(`/api/google-drive/download/${fileId}`),
+  driveDeleteFile: fileId => request(`/api/google-drive/files/${fileId}`,{method:"DELETE"}),
+  driveUploadLiftImage: (customerId, liftId, file) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request(`/api/google-drive/customer-documents/${customerId}/lifts/${liftId}/images`,{method:"POST",body:form});
+  },
+  driveListLiftImages: (customerId, liftId) => request(`/api/google-drive/customer-documents/${customerId}/lifts/${liftId}/images`),
 };

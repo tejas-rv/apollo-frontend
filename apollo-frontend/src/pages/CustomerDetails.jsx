@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Download, Mail, ArrowLeft, Receipt } from "lucide-react";
 import { api } from "../services/api";
+import CustomerDriveDocuments from "../components/CustomerDriveDocuments";
+import LiftImages from "../components/LiftImages";
 
 const NA = "NA";
 const val = (v) => (v === null || v === undefined || v === "" ? NA : v);
@@ -180,11 +182,15 @@ export default function CustomerDetails() {
               {(!l.amcDetails || l.amcDetails.length === 0) && (
                 <div className="empty-box">No AMC contracts for this lift.</div>
               )}
+
+              {l.id && <LiftImages customerId={id} liftId={l.id} />}
             </div>
           );
         })}
         {!lifts.length && <div className="empty-box">No lift details recorded.</div>}
       </div>
+
+      <CustomerDriveDocuments customerId={id} />
     </section>
   );
 }
