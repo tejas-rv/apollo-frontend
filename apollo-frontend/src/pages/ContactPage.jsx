@@ -168,11 +168,6 @@ export default function ContactPage() {
         </form>
 
         <div className="cp-intro">
-          <div className="cp-intro__photo">
-            <img src="/liftImages/passenger-elevator.jpg" alt="Apollo Elevator passenger lift" loading="lazy" />
-          </div>
-          <AppLogo size={44} />
-          <h2 className="cp-intro__heading">Contact details</h2>
           <div className="cp-mapCard">
             <div className="cp-mapCard__header">
               <div>

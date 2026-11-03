@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
 .cp-page {
   --ink: #101e2b;
   --ink-soft: #223247;
@@ -9,7 +11,7 @@
   --white: #ffffff;
   --error: #c0392b;
 
-  font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  font-family: "Manrope", "Segoe UI", system-ui, sans-serif;
   color: var(--ink);
   background: #eef2f7 url("/ContactPage_BG_Image.png") center / cover fixed no-repeat;
   min-height: 100vh;
