@@ -26,7 +26,10 @@ function inMonth(date,year,month){
   if(!date)return false;
   return date.getFullYear()===year && date.getMonth()===month;
 }
-function fmt(n){return n>=1e5?`₹${(n/1e5).toFixed(1)}L`:`₹${n.toLocaleString("en-IN")}`}
+function fmt(n){n=Number(n)||0;return n>=1e5?`₹${(n/1e5).toFixed(1)}L`:`₹${Math.round(n).toLocaleString("en-IN")}`}
+const pad=n=>String(n).padStart(2,"0");
+const isoDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+function fyOfMonth(year,month){return month>=FY_START_MONTH?year:year-1}
 
 /* ── main ── */
 export default function Dashboard(){
@@ -40,6 +43,8 @@ export default function Dashboard(){
 
   const [recentEnquiries,setRecentEnquiries]=useState([]);
   const [newEnquiryCount,setNewEnquiryCount]=useState(0);
+  const [billing,setBilling]=useState(null);      // summary for the selected period
+  const [billingFY,setBillingFY]=useState(null);  // summary for the whole FY (chart)
 
   // fetch all customers (up to 500)
   useEffect(()=>{
@@ -55,6 +60,19 @@ export default function Dashboard(){
     api.adminEnquiries({page:0,size:6}).then(d=>setRecentEnquiries(d.content||[])).catch(()=>{});
     api.adminEnquiries({status:"NEW",page:0,size:1}).then(d=>setNewEnquiryCount(d.totalElements||0)).catch(()=>{});
   },[]);
+
+  const chartFY=filterMode==="fy"?selectedFY:fyOfMonth(selYear,selMonth);
+
+  // saved bills: what was billed, what is in the bank, what is still expected
+  useEffect(()=>{
+    const from=filterMode==="fy"?new Date(selectedFY,FY_START_MONTH,1):new Date(selYear,selMonth,1);
+    const to=filterMode==="fy"?new Date(selectedFY+1,FY_START_MONTH,0):new Date(selYear,selMonth+1,0);
+    api.billSummary(isoDate(from),isoDate(to)).then(setBilling).catch(()=>setBilling(null));
+  },[filterMode,selectedFY,selYear,selMonth]);
+  useEffect(()=>{
+    api.billSummary(isoDate(new Date(chartFY,FY_START_MONTH,1)),isoDate(new Date(chartFY+1,FY_START_MONTH,0)))
+      .then(setBillingFY).catch(()=>setBillingFY(null));
+  },[chartFY]);
 
   const allAmcs=useMemo(()=>
     allCustomers.flatMap(c=>
@@ -99,17 +117,16 @@ export default function Dashboard(){
     return {income,active:active.length,due30:due30.length,svcDue30:svcDue30.length,expired,total:allAmcs.length};
   },[filteredAmcs,allAmcs]);
 
-  /* ── Monthly income bar chart (for FY) ── */
+  /* ── Monthly billed vs paid bar chart (for FY, from saved bills) ── */
   const monthlyData=useMemo(()=>{
-    const fy=filterMode==="fy"?selectedFY:currentFY();
+    const byMonth=Object.fromEntries((billingFY?.monthly||[]).map(p=>[p.month,p]));
     return MONTHS.map((m,i)=>{
       const calMonth=(FY_START_MONTH+i)%12;
-      const calYear=calMonth<FY_START_MONTH?fy+1:fy;
-      const income=allAmcs.filter(a=>a.status==="ACTIVE"&&inMonth(parseDate(a.startDate),calYear,calMonth))
-        .reduce((s,a)=>s+(parseFloat(a.amcAmount)||0),0);
-      return {month:m,income};
+      const calYear=calMonth<FY_START_MONTH?chartFY+1:chartFY;
+      const p=byMonth[`${calYear}-${pad(calMonth+1)}`];
+      return {month:m,billed:Number(p?.billed)||0,paid:Number(p?.paid)||0};
     });
-  },[allAmcs,selectedFY,filterMode]);
+  },[billingFY,chartFY]);
 
   /* ── Status breakdown pie ── */
   const statusData=useMemo(()=>{
@@ -182,7 +199,11 @@ export default function Dashboard(){
 
     {/* ── KPI cards ── */}
     <div className="kpi-grid">
-      <KpiCard icon={IndianRupee} label="AMC Income" value={fmt(kpis.income)} sub={filterMode==="fy"?fyLabel(selectedFY):"This month"} color="blue"/>
+      <KpiCard icon={IndianRupee} label="In bank (paid)" value={fmt(billing?.paid)} sub={`${billing?.paidCount||0} paid bill(s) · incl. GST`} color="green"/>
+      <KpiCard icon={TrendingUp} label="Billed" value={fmt(billing?.billed)} sub={`${billing?.billCount||0} bill(s) raised · incl. GST`} color="blue"/>
+      <KpiCard icon={Clock} label="Outstanding" value={fmt(billing?.outstanding)} sub="Billed, not yet paid" color="amber"/>
+      <KpiCard icon={CalendarClock} label="Projected income" value={fmt(billing?.projected)} sub={`Outstanding + ${fmt(billing?.projectedInstalments)} unbilled instalments`} color="blue"/>
+      <KpiCard icon={Building2} label="AMC contract value" value={fmt(kpis.income)} sub={`Active AMCs · ${filterMode==="fy"?fyLabel(selectedFY):"selected month"}`} color="blue"/>
       <KpiCard icon={CheckCircle} label="Active AMCs" value={kpis.active} sub="in selected period" color="green"/>
       <KpiCard icon={AlertCircle} label="Payments due (30d)" value={kpis.due30} sub="Next payment approaching" color="amber"/>
       <KpiCard icon={Clock} label="Services due (30d)" value={kpis.svcDue30} sub="Next service approaching" color="amber"/>
@@ -194,14 +215,16 @@ export default function Dashboard(){
     {/* ── Charts row ── */}
     <div className="charts-row">
       <div className="panel" style={{flex:2}}>
-        <div className="panel-head"><h2>Monthly AMC Income ({fyLabel(filterMode==="fy"?selectedFY:currentFY())})</h2></div>
+        <div className="panel-head"><h2>Billed vs received ({fyLabel(chartFY)})</h2><Link to="/app/bills">Bills <ArrowRight size={14}/></Link></div>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={monthlyData} margin={{top:5,right:10,left:0,bottom:0}}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0"/>
             <XAxis dataKey="month" tick={{fontSize:11}}/>
             <YAxis tickFormatter={v=>v>=1000?`${(v/1000).toFixed(0)}k`:v} tick={{fontSize:11}} width={48}/>
-            <Tooltip formatter={v=>[`₹${v.toLocaleString("en-IN")}`,"Income"]}/>
-            <Bar dataKey="income" fill="#1e5aa8" radius={[4,4,0,0]}/>
+            <Tooltip formatter={(v,name)=>[`₹${Number(v).toLocaleString("en-IN")}`,name]}/>
+            <Legend wrapperStyle={{fontSize:12}}/>
+            <Bar dataKey="billed" name="Billed" fill="#1e5aa8" radius={[4,4,0,0]}/>
+            <Bar dataKey="paid" name="Paid (in bank)" fill="#2e9a5c" radius={[4,4,0,0]}/>
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -225,7 +248,8 @@ export default function Dashboard(){
     <div className="due-row">
       <div className="panel" style={{flex:1}}>
         <div className="panel-head"><h2>💳 AMC Payments due (next 30 days)</h2></div>
-        <DueTable rows={amcDueList} dateKey="nextPaymentDate" emptyMsg="No payments due in next 30 days"/>
+        <DueTable rows={amcDueList} dateKey="nextPaymentDate" emptyMsg="No payments due in next 30 days"
+          action={a=>a.id&&<Link className="table-link" to={`/app/bills?customerId=${a.customerId}&customerName=${encodeURIComponent(a.customerName)}&amcContractId=${a.id}`}>Bill</Link>}/>
       </div>
       <div className="panel" style={{flex:1}}>
         <div className="panel-head"><h2>🔧 Services due (next 30 days)</h2></div>
@@ -301,12 +325,12 @@ function KpiCard({icon:Icon,label,value,sub,color}){
   </div>;
 }
 
-function DueTable({rows,dateKey,emptyMsg}){
+function DueTable({rows,dateKey,emptyMsg,action}){
   if(!rows.length)return <div className="empty">{emptyMsg}</div>;
   const today=new Date();
   return <div className="table-wrap">
     <table>
-      <thead><tr><th>Customer</th><th>Contract</th><th>Date</th><th>Days</th></tr></thead>
+      <thead><tr><th>Customer</th><th>Contract</th><th>Date</th><th>Days</th>{action&&<th></th>}</tr></thead>
       <tbody>{rows.map((a,i)=>{
         const d=parseDate(a[dateKey]);
         const days=d?Math.round((d-today)/86400000):null;
@@ -315,6 +339,7 @@ function DueTable({rows,dateKey,emptyMsg}){
           <td><small>{a.contractNumber||"—"}</small></td>
           <td>{d?d.toLocaleDateString("en-IN"):"—"}</td>
           <td><span className={`status ${days<=7?"expired":days<=14?"pending":"active"}`}>{days!=null?`${days}d`:"—"}</span></td>
+          {action&&<td>{action(a)}</td>}
         </tr>;
       })}</tbody>
     </table>

@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import {api} from "../services/api";
+import {api,clearSession} from "../services/api";
 import AppLogo from "../components/AppLogo";
 import "../components/AppLogo.css";
 
@@ -16,6 +16,7 @@ export default function Login({onLogin}) {
     setError("");
     try {
       const r = await api.login({username, password});
+      clearSession();
       localStorage.setItem("accessToken", r.accessToken);
       localStorage.setItem("refreshToken", r.refreshToken);
       localStorage.setItem("userRole", r.role);

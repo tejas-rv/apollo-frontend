@@ -81,6 +81,22 @@ h1,h2,h3,h4,h5,h6{font-family:"DM Sans",system-ui,-apple-system,sans-serif;font-
 .summary-row{display:flex;justify-content:space-between;padding:10px 14px;font-size:13px;border-bottom:1px solid var(--line)}
 .summary-row:last-child{border-bottom:0}
 .summary-row.total{background:#f6f7f9;font-weight:700;font-size:14px}
+.bill-grid-3{grid-template-columns:repeat(3,1fr)}
+.bill-field{display:grid;gap:6px;font-size:12px;font-weight:600;color:#4d5868;align-content:start}
+.bill-field textarea.bill-input{resize:vertical}
+.bill-items td{vertical-align:top;padding:10px 8px}
+.bill-items .num{text-align:right;white-space:nowrap}
+.bill-items tr.row-invalid td{background:#fff8f8}
+.bill-send-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.bill-pdf-panel{padding:16px}
+.bill-pdf-frame{width:100%;height:78vh;border:1px solid var(--line);border-radius:8px;background:#f1f3f6}
+.bill-send-side .bill-summary{max-width:none;margin-top:12px}
+.send-title{display:flex;align-items:center;gap:8px;font-size:15px;margin:0 0 12px}
+
+/* ── Validation ── */
+.field-error{display:block;color:#b43e3e;font-size:11px;font-weight:500;margin-top:2px}
+.field-hint{display:block;color:var(--muted);font-size:11px;font-weight:400}
+input.invalid,textarea.invalid,select.invalid,.form input[aria-invalid="true"],.form textarea[aria-invalid="true"],.form select[aria-invalid="true"]{border-color:#d36b6b!important;box-shadow:0 0 0 3px #fbeaea!important}
 
 /* ── Engineer portal extras ── */
 .yes-btn, .no-btn { padding:6px 14px; border-radius:7px; border:1px solid; font-size:12px; font-weight:700; cursor:pointer; transition:.15s; }
@@ -90,12 +106,61 @@ h1,h2,h3,h4,h5,h6{font-family:"DM Sans",system-ui,-apple-system,sans-serif;font-
 .no-btn:hover  { background:#f5dcdc; }
 .checklist-item { border:1px solid var(--line); border-radius:9px; padding:12px 14px; background:#fafbfc; }
 .checklist-item+.checklist-item { margin-top:10px; }
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,37,.48);display:grid;place-items:center;padding:18px;z-index:100}
+.modal-card{width:min(560px,100%);max-height:calc(100vh - 36px);overflow:auto;margin:0}
+.modal-card .panel-head{align-items:flex-start}
+.modal-card .panel-head .muted{margin:5px 0 0}
+.modal-card .form-actions{margin-top:4px}
+.clickable-row{cursor:pointer}.clickable-row:hover td{background:#f7f9fc}
+.modal-card.modal-wide{width:min(920px,100%)}
+.modal-card .section-sub{margin:4px 0 0}
+.stats.four{grid-template-columns:repeat(4,1fr)}
+.stat.warn .stat-icon{background:#fff5dd;color:#986e18}
+.engineers-toolbar{display:flex;gap:12px;align-items:center}
+.engineers-toolbar .search{flex:1}
+.engineers-toolbar .segmented{margin:0;min-width:260px}
+.engineer-actions{flex-wrap:wrap;margin-bottom:14px}
+.profile-dl{display:grid;grid-template-columns:150px 1fr 150px 1fr;gap:10px 14px;margin:0;padding:14px;border-radius:8px;background:#f8f9fb}
+.profile-dl dt{color:var(--muted);font-size:12px}
+.profile-dl dd{margin:0;font-size:13px}
+.profile-dl .pre{white-space:pre-wrap}
+.mini-stats{flex-wrap:wrap}
+.type-tabs{max-width:560px}
+.type-badge.type-admin{background:#edf3fb;color:#1e5aa8}
+.type-badge.type-office{background:#f4eefc;color:#6a3fa3}
+.type-badge.type-engineer{background:#fff5dd;color:#986e18}
+.type-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.type-picker button{display:grid;gap:4px;justify-items:start;text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;padding:12px;color:#344154;cursor:pointer}
+.type-picker button small{color:var(--muted);font-size:11px;line-height:1.4}
+.type-picker button.selected{border-color:var(--blue);background:#f2f6fc;box-shadow:0 0 0 3px #e9f0fa}
+.type-picker button:disabled{opacity:.6;cursor:not-allowed}
 
 @media(max-width:850px){
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
   .charts-row,.due-row{flex-direction:column}
+  .stats.four{grid-template-columns:repeat(2,1fr)}
+  .engineers-toolbar{flex-direction:column;align-items:stretch}
+  .profile-dl{grid-template-columns:120px 1fr}
+  .type-picker{grid-template-columns:1fr}
+  .bill-grid-3{grid-template-columns:repeat(2,1fr)}
+  .bill-send-layout{grid-template-columns:1fr}
+  .bill-pdf-frame{height:60vh}
 }
 @media(max-width:560px){
   .kpi-grid{grid-template-columns:1fr}
   .bill-steps{display:none}
+  .stats.four{grid-template-columns:1fr}
 }
+.status.scheduled{background:#e9f0fa;color:#1e5aa8}.status.completed{background:#e8f6ee;color:#217746}.visit-list{margin-top:10px}.visit-list summary{cursor:pointer;font-size:12px;color:var(--blue);padding:6px 0}
+
+/* Billing: AMC/maintenance bills, saved bills, AMC plans */
+.bill-narrow{max-width:1050px}
+.status.generated{background:#e9f0fa;color:#1e5aa8}.status.sent{background:#fff5dd;color:#986e18}.status.paid{background:#e8f6ee;color:#217746}
+.amc-options{display:grid;gap:10px;margin-top:8px}
+.amc-option{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer}
+.amc-option>div{flex:1}.amc-option b,.amc-option small{display:block}.amc-option small{font-size:11px;color:var(--muted);margin-top:3px}
+.amc-option.selected{border-color:#7da4d4;background:#f4f8fd}.amc-option.disabled{opacity:.55;cursor:not-allowed}
+.segmented button:disabled{cursor:not-allowed;opacity:.6}.segmented button small{font-size:11px}
+.bill-filters{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.bill-filters select{width:auto;min-width:150px}
+.bill-row-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.billing-chart-note{font-size:11px;color:var(--muted);margin-top:6px}

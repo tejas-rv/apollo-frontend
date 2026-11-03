@@ -52,6 +52,7 @@ export default function CustomerDetails() {
 
   const lifts = c.lifts || [];
   const amcs = lifts.flatMap((l) => l.amcDetails || []);
+  const amcLink = `/app/amc?customerId=${id}&customerName=${encodeURIComponent(c.customerName)}`;
 
   return (
     <section className="page">
@@ -69,11 +70,9 @@ export default function CustomerDetails() {
           {amcs.length > 0 && (
             <button className="secondary" onClick={pdf}><Download size={17} /> AMC PDF</button>
           )}
-          {amcs.length > 0 && (
-            <Link className="primary" to={`/app/bills?customerId=${id}&customerName=${encodeURIComponent(c.customerName)}`}>
-              <Receipt size={17} /> Generate Bill
-            </Link>
-          )}
+          <Link className="primary" to={`/app/bills?customerId=${id}&customerName=${encodeURIComponent(c.customerName)}`}>
+            <Receipt size={17} /> Generate Bill
+          </Link>
         </div>
       </div>
 
@@ -179,15 +178,36 @@ export default function CustomerDetails() {
                   <span className={`status ${String(a.status).toLowerCase()}`}>{val(a.status)}</span>
                 </div>
               ))}
-              {(!l.amcDetails || l.amcDetails.length === 0) && (
-                <div className="empty-box">No AMC contracts for this lift.</div>
+              {(l.amcDetails || []).filter((a) => a.serviceHistory?.length).map((a) => (
+                <details className="visit-list" key={`visits-${a.id || a.contractNumber}`}>
+                  <summary>Service visits · {val(a.contractNumber)} ({a.serviceHistory.length})</summary>
+                  <table>
+                    <thead><tr><th>Date</th><th>Engineer</th><th>Work done</th><th>Status</th></tr></thead>
+                    <tbody>
+                      {[...a.serviceHistory].sort((x, y) => String(x.serviceDate).localeCompare(String(y.serviceDate))).map((h, i) => (
+                        <tr key={h.id || i}>
+                          <td>{val(h.serviceDate)}</td>
+                          <td>{val(h.engineerName)}{!h.assignedEngineerId && h.engineerName && <small>Not linked to an account</small>}</td>
+                          <td>{val(h.workDone)}</td>
+                          <td><span className={`status ${String(h.status).toLowerCase()}`}>{val(h.status)}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </details>
+              ))}
+              {!(l.amcDetails || []).some((a) => a.status === "ACTIVE") && (
+                <div className="empty-box">
+                  {(l.amcDetails || []).length ? "No ACTIVE AMC contract for this lift." : "No AMC contracts for this lift."}{" "}
+                  <Link className="table-link" to={amcLink}>Add AMC contract →</Link>
+                </div>
               )}
 
               {l.id && <LiftImages customerId={id} liftId={l.id} />}
             </div>
           );
         })}
-        {!lifts.length && <div className="empty-box">No lift details recorded.</div>}
+        {!lifts.length && <div className="empty-box">No lift details recorded. <Link className="table-link" to={`/app/customers/${id}/edit`}>Add a lift →</Link></div>}
       </div>
 
       <CustomerDriveDocuments customerId={id} />

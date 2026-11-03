@@ -1,6 +1,13 @@
 import React,{useEffect,useState} from "react"; import {Search,Eye,Pencil,Check,X} from "lucide-react"; import {api} from "../services/api";
 
-const STATUSES=["NEW","IN_PROGRESS","CONTACTED","CLOSED"];
+const STATUS_TRANSITIONS={
+  NEW:["IN_PROGRESS","CLOSED"],
+  IN_PROGRESS:["WORK_ORDER","CLOSED"],
+  WORK_ORDER:["CLOSED"],
+  COMPLETED:[],
+  CLOSED:[]
+};
+const ALL_STATUSES=Object.keys(STATUS_TRANSITIONS);
 
 export default function Enquiries(){
   const [q,setQ]=useState(""),[status,setStatus]=useState(""),[from,setFrom]=useState(""),[to,setTo]=useState("");
@@ -27,7 +34,7 @@ export default function Enquiries(){
     finally{setSavingStatus(false);}
   }
 
-  function startEdit(i){setEditingId(i.id);setEditValue(i.status);}
+  function startEdit(i){setEditingId(i.id);setEditValue(STATUS_TRANSITIONS[i.status]?.[0]||i.status);}
   function cancelEdit(){setEditingId(null);}
 
   async function saveRowStatus(id){
@@ -49,7 +56,7 @@ export default function Enquiries(){
       <div className="search" style={{flex:"1 1 260px"}}><Search size={18}/><input placeholder="Search by name or phone…" value={q} onChange={e=>setQ(e.target.value)}/></div>
       <select className="bill-select" style={{maxWidth:180}} value={status} onChange={e=>{setStatus(e.target.value);setPage(0)}}>
         <option value="">All statuses</option>
-        {STATUSES.map(s=><option key={s} value={s}>{s.replace("_"," ")}</option>)}
+        {ALL_STATUSES.map(s=><option key={s} value={s}>{s.replace("_"," ")}</option>)}
       </select>
       <input className="bill-input" style={{maxWidth:160}} type="date" value={from} onChange={e=>{setFrom(e.target.value);setPage(0)}}/>
       <input className="bill-input" style={{maxWidth:160}} type="date" value={to} onChange={e=>{setTo(e.target.value);setPage(0)}}/>
@@ -77,14 +84,14 @@ export default function Enquiries(){
                           onChange={e=>setEditValue(e.target.value)}
                           autoFocus
                         >
-                          {STATUSES.map(s=><option key={s} value={s}>{s.replace("_"," ")}</option>)}
+                          {(STATUS_TRANSITIONS[i.status]||[]).map(s=><option key={s} value={s}>{s.replace("_"," ")}</option>)}
                         </select>
                         <button className="icon-btn" title="Save" disabled={rowSaving===i.id} onClick={()=>saveRowStatus(i.id)}><Check size={16}/></button>
                         <button className="icon-btn" title="Cancel" disabled={rowSaving===i.id} onClick={cancelEdit}><X size={16}/></button>
                       </div>
                     : <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                        <span className={`status ${i.status==="NEW"?"pending":i.status==="CLOSED"?"active":""}`}>{i.status?.replace("_"," ")}</span>
-                        <button className="icon-btn" title="Edit status" onClick={()=>startEdit(i)}><Pencil size={14}/></button>
+                        <span className={`status ${i.status==="NEW"?"pending":i.status==="CLOSED"?"active":i.status==="COMPLETED"?"active":""}`}>{i.status?.replace("_"," ")}</span>
+                        {!!STATUS_TRANSITIONS[i.status]?.length&&<button className="icon-btn" title="Edit status" onClick={()=>startEdit(i)}><Pencil size={14}/></button>}
                       </div>
                   }
                 </td>
@@ -121,9 +128,12 @@ export default function Enquiries(){
         </dl>
         <label style={{display:"grid",gap:7,marginTop:18,fontSize:12,fontWeight:600,color:"#4d5868"}}>
           Status
-          <select className="bill-select" value={selected.status} disabled={savingStatus} onChange={e=>changeStatus(e.target.value)}>
-            {STATUSES.map(s=><option key={s} value={s}>{s.replace("_"," ")}</option>)}
-          </select>
+          {STATUS_TRANSITIONS[selected.status]?.length
+            ? <select className="bill-select" value={selected.status} disabled={savingStatus} onChange={e=>changeStatus(e.target.value)}>
+                <option value={selected.status}>{selected.status.replace("_"," ")}</option>
+                {STATUS_TRANSITIONS[selected.status].map(s=><option key={s} value={s}>{s.replace("_"," ")}</option>)}
+              </select>
+            : <span className="status">{selected.status?.replace("_"," ")}</span>}
         </label>
       </div>
     </div>}

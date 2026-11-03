@@ -1,7 +1,7 @@
 import React,{useEffect,useState} from "react";
 import {Routes,Route,Navigate,NavLink,useNavigate,useLocation} from "react-router-dom";
-import {LayoutDashboard,Users,FileText,Send,ShieldCheck,LogOut,Menu,Receipt,ClipboardList,History,MessageSquare,ChevronDown,KeyRound} from "lucide-react";
-import {api} from "./services/api";
+import {LayoutDashboard,Users,FileText,Send,LogOut,Menu,Receipt,ClipboardList,History,MessageSquare,ChevronDown,KeyRound,FileCheck,Briefcase,UserPlus,FileSpreadsheet,ShieldCheck,Wrench} from "lucide-react";
+import {api,clearSession} from "./services/api";
 import Login from "./pages/Login";
 import HomePage from "./pages/HomePage";
 import ContactPage from "./pages/ContactPage";
@@ -9,10 +9,15 @@ import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
 import CustomerForm from "./pages/CustomerForm";
 import CustomerDetails from "./pages/CustomerDetails";
+import CustomerDataTransfer from "./pages/CustomerDataTransfer";
 import Notifications from "./pages/Notifications";
-import Settings from "./pages/Settings";
 import Bills from "./pages/Bills";
+import AmcContracts from "./pages/AmcContracts";
+import Services from "./pages/Services";
 import Enquiries from "./pages/Enquiries";
+import Quotations from "./pages/Quotations";
+import WorkOrders from "./pages/WorkOrders";
+import UsersPage from "./pages/Users";
 import EngineerDashboard from "./pages/engineer/EngineerDashboard";
 import EngineerCustomers from "./pages/engineer/EngineerCustomers";
 import EngineerCustomerDetail from "./pages/engineer/EngineerCustomerDetail";
@@ -22,10 +27,15 @@ import ServiceReportHistory from "./pages/engineer/ServiceReportHistory";
 const adminNav=[
   ["/app","Dashboard",LayoutDashboard],
   ["/app/customers","Customers",Users],
+  ["/app/customer-data","Import / Export",FileSpreadsheet],
+  ["/app/amc","AMC contracts",ShieldCheck],
+  ["/app/services","Services",Wrench],
   ["/app/bills","Bills",Receipt],
   ["/app/enquiries","Enquiries",MessageSquare],
+  ["/app/quotations","Quotations",FileCheck],
+  ["/app/work-orders","Work orders",Briefcase],
+  ["/app/users","Users",UserPlus],
   ["/app/notifications","Notifications",Send],
-  ["/app/settings","Security",ShieldCheck],
 ];
 const engineerNav=[
   ["/engineer","Dashboard",LayoutDashboard],
@@ -49,7 +59,7 @@ function ChangePasswordModal({onClose,onLogout}){
     e.preventDefault();
     setError("");
     if(!form.currentPassword||!form.newPassword||!form.confirmPassword){setError("All fields are required.");return;}
-    if(form.newPassword.length<6){setError("New password must be at least 6 characters.");return;}
+    if(form.newPassword.length<8){setError("New password must be at least 8 characters.");return;}
     if(form.newPassword!==form.confirmPassword){setError("New password and confirmation do not match.");return;}
     setSaving(true);
     try{
@@ -79,8 +89,8 @@ function ChangePasswordModal({onClose,onLogout}){
       {error&&<div className="alert error">{error}</div>}
       <form className="form" onSubmit={submit}>
         <label>Current password<input type="password" value={form.currentPassword} onChange={set("currentPassword")}/></label>
-        <label>New password<input type="password" value={form.newPassword} onChange={set("newPassword")}/></label>
-        <label>Confirm new password<input type="password" value={form.confirmPassword} onChange={set("confirmPassword")}/></label>
+        <label>New password<input type="password" minLength={8} maxLength={72} value={form.newPassword} onChange={set("newPassword")}/></label>
+        <label>Confirm new password<input type="password" minLength={8} maxLength={72} value={form.confirmPassword} onChange={set("confirmPassword")}/></label>
         <div className="form-actions">
           <button type="button" className="secondary" onClick={onClose}>Cancel</button>
           <button className="primary" disabled={saving}>{saving?"Saving…":"Update password"}</button>
@@ -92,13 +102,11 @@ function ChangePasswordModal({onClose,onLogout}){
 
 function Shell({children,user,nav}){
   const [open,setOpen]=useState(true), navg=useNavigate();
-  const [signedOut,setSignedOut]=useState(false);
   const [menuOpen,setMenuOpen]=useState(false);
   const [pwOpen,setPwOpen]=useState(false);
   const location=useLocation();
   const logout=()=>{
-    localStorage.clear();
-    setSignedOut(true);
+    clearSession();
     navg("/", { replace: true });
   };
   return <div className="app-shell">
@@ -112,7 +120,7 @@ function Shell({children,user,nav}){
         <div className="user-menu" onClick={()=>setMenuOpen(!menuOpen)}>
           <div className="user">
             <div className="avatar">{(user?.username||"U")[0].toUpperCase()}</div>
-            <div><b>{user?.username||"User"}</b><small>{user?.role||"—"}</small></div>
+            <div><b>{user?.username||"User"}</b><small>{user?.userType||user?.role||"—"}</small></div>
           </div>
           <ChevronDown size={16} className={menuOpen?"user-menu__chevron open":"user-menu__chevron"}/>
           {menuOpen&&<>
@@ -124,7 +132,6 @@ function Shell({children,user,nav}){
           </>}
         </div>
       </header>
-      {signedOut&&<div className="alert success" style={{margin:"18px 32px 0"}}>You have been successfully signed out.</div>}
       {children}
     </main>
     {pwOpen&&<ChangePasswordModal onClose={()=>setPwOpen(false)} onLogout={()=>{setPwOpen(false);logout();}}/>}
@@ -139,8 +146,6 @@ export default function App(){
   useEffect(()=>{
     if(localStorage.getItem("accessToken")) api.me().then(u=>{setUser(u);localStorage.setItem("userRole",u.role);localStorage.setItem("username",u.username);}).catch(()=>{});
   },[]);
-
-  const isEngineer=user?.role==="ENGINEER";
 
   return <Routes>
     <Route path="/" element={<HomePage/>}/>
@@ -159,10 +164,16 @@ export default function App(){
             <Route path="/customers/new" element={<CustomerForm/>}/>
             <Route path="/customers/:id" element={<CustomerDetails/>}/>
             <Route path="/customers/:id/edit" element={<CustomerForm/>}/>
+            <Route path="/customer-data" element={<CustomerDataTransfer/>}/>
+            <Route path="/amc" element={<AmcContracts/>}/>
+            <Route path="/services" element={<Services/>}/>
             <Route path="/bills" element={<Bills/>}/>
             <Route path="/enquiries" element={<Enquiries/>}/>
+            <Route path="/quotations" element={<Quotations/>}/>
+            <Route path="/work-orders" element={<WorkOrders/>}/>
+            <Route path="/users" element={<UsersPage/>}/>
+            <Route path="/engineers" element={<Navigate to="/app/users?type=ENGINEER" replace/>}/>
             <Route path="/notifications" element={<Notifications/>}/>
-            <Route path="/settings" element={<Settings/>}/>
             <Route path="*" element={<Navigate to="/app" replace/>}/>
           </Routes>
         </Shell>

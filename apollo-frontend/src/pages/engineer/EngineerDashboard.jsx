@@ -19,7 +19,27 @@ export default function EngineerDashboard(){
   if(err)     return <section className="page"><div className="alert error">{err}</div></section>;
 
   const upcoming = dash?.upcomingServices || [];
+  const overdue  = dash?.overdueServices  || [];
   const recent   = dash?.recentReports   || [];
+  const daysUntil = d => Math.round((new Date(`${d}T00:00:00`) - new Date(new Date().toDateString())) / 86400000);
+  const visitRows = (list, isOverdue) => list.slice(0,10).map(s=>{
+    const days=daysUntil(s.serviceDate);
+    return <tr key={s.id}>
+      <td><b>{s.customerName||"—"}</b><small>{s.city||""}</small></td>
+      <td><small>{s.contractNumber||"—"}</small></td>
+      <td><small>{s.liftBrand||"—"} · {s.serialNumber||"—"}</small></td>
+      <td>
+        <span>{s.serviceDate}</span>
+        <span className={`status ${isOverdue||days<=3?"expired":days<=7?"pending":"active"}`} style={{marginLeft:8}}>{isOverdue?`${-days}d late`:days===0?"Today":`${days}d`}</span>
+      </td>
+      <td>
+        <Link className="table-link" to={`/engineer/report/new?customerId=${s.customerId}&amcContractId=${s.amcContractId}&customerName=${encodeURIComponent(s.customerName||"")}`}>
+          Start Report
+        </Link>
+      </td>
+    </tr>;
+  });
+  const visitHead = <thead><tr><th>Customer</th><th>Contract</th><th>Lift</th><th>Service date</th><th></th></tr></thead>;
 
   return <section className="page">
     <div className="page-head">
@@ -36,33 +56,22 @@ export default function EngineerDashboard(){
 
     <div className="due-row">
       {/* Upcoming services */}
-      <div className="panel" style={{flex:2}}>
+      <div style={{flex:2,minWidth:0}}>
+      {overdue.length>0&&<div className="panel">
         <div className="panel-head">
-          <div><h2>Upcoming Services (next 30 days)</h2><span className="muted">{upcoming.length} scheduled</span></div>
+          <div><h2 className="text-danger" style={{fontSize:17}}>Overdue Services</h2><span className="muted">{overdue.length} past due — complete or reschedule</span></div>
+        </div>
+        <div className="table-wrap"><table>{visitHead}<tbody>{visitRows(overdue,true)}</tbody></table></div>
+      </div>}
+      <div className="panel">
+        <div className="panel-head">
+          <div><h2>Upcoming Services</h2><span className="muted">{upcoming.length} scheduled</span></div>
         </div>
         {upcoming.length===0
-          ? <div className="empty">No upcoming services in the next 30 days.</div>
-          : <div className="table-wrap"><table>
-              <thead><tr><th>Customer</th><th>Contract</th><th>Lift</th><th>Next Service</th><th></th></tr></thead>
-              <tbody>{upcoming.slice(0,10).map((s,i)=>{
-                const days=Math.round((new Date(s.nextServiceDate)-new Date())/(1000*60*60*24));
-                return <tr key={i}>
-                  <td><b>{s.customerName}</b></td>
-                  <td><small>{s.contractNumber||"—"}</small></td>
-                  <td><small>{s.liftBrand||"—"} · {s.serialNumber||"—"}</small></td>
-                  <td>
-                    <span>{s.nextServiceDate}</span>
-                    <span className={`status ${days<=3?"expired":days<=7?"pending":"active"}`} style={{marginLeft:8}}>{days}d</span>
-                  </td>
-                  <td>
-                    <Link className="table-link" to={`/engineer/report/new?customerId=${s.customerId}&amcContractId=${s.amcContractId}&customerName=${encodeURIComponent(s.customerName)}`}>
-                      Start Report
-                    </Link>
-                  </td>
-                </tr>;
-              })}</tbody>
-            </table></div>
+          ? <div className="empty">No upcoming services scheduled.</div>
+          : <div className="table-wrap"><table>{visitHead}<tbody>{visitRows(upcoming,false)}</tbody></table></div>
         }
+      </div>
       </div>
 
       {/* Recent reports */}

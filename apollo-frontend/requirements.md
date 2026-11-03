@@ -17,11 +17,15 @@ Admins can:
 - Search, create, edit, delete, and view customers
 - Manage lift details and AMC contract records
 - Download AMC contract PDFs
-- Generate GST or non-GST bills from customer/AMC data
-- Preview and edit bill details before PDF generation
+- Generate GST bills from customer/AMC data
+- Preview the bill PDF before sending
 - Send bills via email or WhatsApp
 - Send generic email or WhatsApp notifications
 - Refresh the backend security configuration
+- Create engineer accounts
+- Reset account passwords as an administrator
+- Create and track quotations for enquiries, then convert accepted quotations into work orders
+- Convert active work orders into customer records with initial lift details
 
 ### 2.2 Engineer
 Engineers can:
@@ -90,16 +94,10 @@ The system must support:
 - The dashboard should derive KPIs and due alerts from AMC data.
 
 ### 3.5 Bill Generation and PDF Handling
-The billing workflow must support:
-- Customer search and selection
-- Document type selection:
-  - GST Bill
-  - Without GST Bill
-- Fetching a customer-specific bill preview from backend data
-- Editing bill details before generation
-- Previewing the generated PDF in a modal or browser viewer
-- Downloading the generated PDF
-- Sending the generated bill by email or WhatsApp
+The billing workflow (GST bills only) is a three-step flow:
+1. Customer search and selection
+2. Editing the bill pre-filled from backend data; line amounts are always quantity × rate and SGST/CGST are each half of the GST rate
+3. Previewing the generated PDF in the page, then downloading or sending it by email or WhatsApp (any edit invalidates the preview)
 
 Bill data includes:
 - invoice number/date
@@ -114,6 +112,7 @@ The admin communication module must allow:
 - Sending plain WhatsApp messages
 - Sending contract-based email messages for a customer
 - Sending contract-based WhatsApp messages for a customer
+- Generating a PDF from provided HTML and sending it via email, WhatsApp, or both
 
 Required fields include recipient email/phone number and message content, depending on selected mode.
 
@@ -131,6 +130,13 @@ The engineer service workflow must include:
 - Submit the report to the backend
 - Download the generated service report PDF after submission
 - View historical service reports
+
+### 3.9 Sales and Work-order Lifecycle
+- List enquiries eligible for a quotation and create draft quotations with an amount and notes.
+- Filter quotations and transition their status through backend-supported states.
+- Convert accepted quotations into work orders and convert active work orders into customer records.
+- Include at least one valid lift when converting a work order into a customer.
+- Create engineer accounts from the admin portal.
 
 ## 4. External Interfaces
 The frontend calls these backend endpoints:
@@ -151,6 +157,14 @@ The frontend calls these backend endpoints:
 - Admin notifications and security:
   - /api/admin/notifications/*
   - /api/admin/security/config/refresh
+  - /api/auth/reset-password
+  - /api/admin/users (Users page: ADMIN, OFFICE and ENGINEER accounts; OFFICE users get admin access)
+  - /api/admin/quotations
+  - /api/admin/enquiries/quotation-pending
+  - /api/admin/work-orders
+  - /api/admin/enquiries/{id}/convert-to-work-order
+  - /api/admin/enquiries/{id}/convert-to-customer
+  - /api/admin/notifications/html-to-pdf
 
 - Engineer APIs:
   - /api/engineer/dashboard

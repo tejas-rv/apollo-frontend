@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { api } from "../services/api";
+import { normalizeMobile, validateEmail, validateMobile, validateName } from "../utils/validation";
 import PublicNav from "../components/PublicNav";
 import AppLogo from "../components/AppLogo";
 import "../components/AppLogo.css";
@@ -43,10 +44,15 @@ export default function ContactPage() {
 
   const validate = () => {
     const next = {};
-    if (!form.name.trim()) next.name = "Enter your name.";
-    if (!form.phone.trim()) next.phone = "Enter a phone number we can reach you on.";
-    else if (form.phone.replace(/\D/g, "").length < 10) next.phone = "Enter a valid 10-digit phone number.";
-    if (!form.city.trim()) next.city = "Enter your city.";
+    const name = validateName(form.name, { required: true, label: "Name" });
+    if (name) next.name = name;
+    const phone = validateMobile(form.phone, { required: true, label: "Phone number" });
+    if (phone) next.phone = phone;
+    const email = validateEmail(form.email);
+    if (email) next.email = email;
+    const city = validateName(form.city, { required: true, label: "City" });
+    if (city) next.city = city;
+    if (form.message.length > 2000) next.message = "Message must not exceed 2000 characters.";
     if (!form.policyAccepted) next.policyAccepted = "Please accept the privacy policy.";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -60,7 +66,7 @@ export default function ContactPage() {
     api.submitEnquiry({
       inquiryType,
       fullName: form.name.trim(),
-      phoneNumber: form.phone.trim(),
+      phoneNumber: normalizeMobile(form.phone),
       email: form.email.trim(),
       city: form.city.trim(),
       requirementType: form.interest,
@@ -107,13 +113,13 @@ export default function ContactPage() {
             <div className="cp-field">
               <label htmlFor="name">Name <span className="cp-required">*</span></label>
               <span className="cp-helper">Enter your full name as you want us to address you.</span>
-              <input id="name" type="text" value={form.name} onChange={update("name")} placeholder="Your full name" />
+              <input id="name" type="text" maxLength={100} value={form.name} onChange={update("name")} placeholder="Your full name" />
               {errors.name && <span className="cp-error">{errors.name}</span>}
             </div>
             <div className="cp-field">
               <label htmlFor="phone">Phone number <span className="cp-required">*</span></label>
-              <span className="cp-helper">We’ll call or WhatsApp you on this number.</span>
-              <input id="phone" type="tel" value={form.phone} onChange={update("phone")} placeholder="10-digit mobile number" />
+              <span className="cp-helper">10-digit Indian mobile — we’ll call or WhatsApp you on this number.</span>
+              <input id="phone" type="tel" inputMode="numeric" maxLength={13} value={form.phone} onChange={update("phone")} placeholder="98765 43210" />
               {errors.phone && <span className="cp-error">{errors.phone}</span>}
             </div>
           </div>
@@ -122,12 +128,13 @@ export default function ContactPage() {
             <div className="cp-field">
               <label htmlFor="email">Email</label>
               <span className="cp-helper">Optional — useful if you want a written quote.</span>
-              <input id="email" type="email" value={form.email} onChange={update("email")} placeholder="you@example.com" />
+              <input id="email" type="email" maxLength={150} value={form.email} onChange={update("email")} placeholder="you@example.com" />
+              {errors.email && <span className="cp-error">{errors.email}</span>}
             </div>
             <div className="cp-field">
               <label htmlFor="city">City <span className="cp-required">*</span></label>
               <span className="cp-helper">Tell us where the lift will be installed or serviced.</span>
-              <input id="city" type="text" value={form.city} onChange={update("city")} placeholder="Where the lift will be installed" />
+              <input id="city" type="text" maxLength={100} value={form.city} onChange={update("city")} placeholder="Where the lift will be installed" />
               {errors.city && <span className="cp-error">{errors.city}</span>}
             </div>
           </div>
@@ -146,7 +153,8 @@ export default function ContactPage() {
           <div className="cp-field">
             <label htmlFor="message">Tell us more</label>
             <span className="cp-helper">Share floor count, lift type, budget, or timeline.</span>
-            <textarea id="message" rows={5} value={form.message} onChange={update("message")} placeholder="Number of floors, timeline, budget — anything that helps us prepare a quote." />
+            <textarea id="message" rows={5} maxLength={2000} value={form.message} onChange={update("message")} placeholder="Number of floors, timeline, budget — anything that helps us prepare a quote." />
+            {errors.message && <span className="cp-error">{errors.message}</span>}
           </div>
 
           <label className="cp-checkbox">
