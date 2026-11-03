@@ -5,6 +5,26 @@ h1,h2,h3,h4,h5,h6{font-family:"DM Sans",system-ui,-apple-system,sans-serif;font-
 .spin{animation:spin 1s linear infinite}
 .icon-btn:disabled,.danger-icon:disabled{opacity:.4;cursor:not-allowed}
 .lift-images{border-top:1px dashed var(--line);margin-top:14px;padding-top:14px}
+.serviceability-tabs{overflow-x:auto}.serviceability-tabs button{white-space:nowrap}
+.serviceability-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.serviceability-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.serviceability-grid>.panel{min-width:0}
+.serviceability-actions{display:flex;gap:10px;flex-wrap:wrap;margin:-4px 0 18px}
+.serviceability-filters{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:16px}
+.serviceability-filters>input,.serviceability-filters>select,.serviceability-date input{border:1px solid #d8dde5;border-radius:7px;background:white;padding:9px 10px;color:#1c2735;font-size:12px;min-width:120px}
+.serviceability-filters>input[type=file]{max-width:320px}
+.serviceability-check{display:flex!important;align-items:center;gap:8px!important;font-weight:500!important}
+.serviceability-check input{width:auto!important}
+.serviceability-date{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+.serviceability-reason{max-width:220px;color:#596577;font-size:12px}
+.serviceability-page .table-wrap select,.serviceability-page .table-wrap input[type=number]{border:1px solid #d8dde5;border-radius:6px;padding:7px 8px;max-width:180px;background:#fff;font-size:12px}
+.serviceability-page .bill-row-actions{display:flex;gap:5px}
+.serviceability-page .panel-head p{margin:4px 0 0}
+.serviceability-page .mini-stats{padding-top:0}
+.serviceability-page .modal-card{max-height:calc(100vh - 32px);overflow:auto}
+.serviceability-page .alert svg{vertical-align:middle;margin-right:5px}
+@media(max-width:1000px){.serviceability-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.serviceability-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.serviceability-filters>*{flex:1 1 130px}.serviceability-reason{min-width:150px}}
 .lift-images-head{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;color:#344154;margin-bottom:10px}
 .lift-image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .lift-image-card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8f9fb}
@@ -164,3 +184,10 @@ input.invalid,textarea.invalid,select.invalid,.form input[aria-invalid="true"],.
 .bill-filters{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.bill-filters select{width:auto;min-width:150px}
 .bill-row-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .billing-chart-note{font-size:11px;color:var(--muted);margin-top:6px}
+
+.login-page{background:#eef2f7 url("/LoginPage_BG_NEW.png") center/cover no-repeat}
+.login-brand{display:grid;justify-items:center;gap:4px;margin-bottom:20px;color:var(--navy)}
+.login-brand strong{letter-spacing:3px;font-size:20px}
+.login-brand span{color:var(--muted);font-size:12px}
+.login-card{position:relative;left:25vw}
+@media(max-width:560px){.login-card{left:0}}

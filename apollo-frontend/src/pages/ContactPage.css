@@ -11,7 +11,7 @@
 
   font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   color: var(--ink);
-  background: var(--white);
+  background: #eef2f7 url("/ContactPage_BG_Image.png") center / cover fixed no-repeat;
   min-height: 100vh;
 }
 .cp-page h1 { font-family: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif; font-weight: 600; letter-spacing: -0.01em; font-size: clamp(32px, 4vw, 46px); line-height: 1.08; margin: 0 0 14px; }

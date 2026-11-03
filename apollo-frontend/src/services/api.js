@@ -132,6 +132,39 @@ export const api = {
   },
   serviceVisitSummary: () => request("/api/admin/services/summary"),
   serviceVisitHistory: id => request(`/api/admin/services/${id}/reschedules`),
+  serviceabilityDashboard: () => request("/api/serviceability/dashboard"),
+  serviceabilityZones: () => request("/api/serviceability/zones"),
+  saveServiceabilityZone: (zoneId, body) => request(
+    zoneId ? `/api/serviceability/zones/${encodeURIComponent(zoneId)}` : "/api/serviceability/zones",
+    {method:zoneId?"PUT":"POST",body:JSON.stringify(body)}
+  ),
+  serviceabilityPincodes: (params={}) => {
+    const q=new URLSearchParams(Object.entries(params).filter(([,v])=>v!==""&&v!=null));
+    return request(`/api/serviceability/pincodes?${q.toString()}`);
+  },
+  saveServiceabilityPincode: (id, body) => request(
+    id ? `/api/serviceability/pincodes/${id}` : "/api/serviceability/pincodes",
+    {method:id?"PUT":"POST",body:JSON.stringify(body)}
+  ),
+  importServiceabilityPincodes: file => {
+    const form=new FormData();
+    form.append("file",file);
+    return request("/api/serviceability/pincodes/import",{method:"POST",body:form});
+  },
+  serviceabilityEngineers: (zoneId) => request(
+    `/api/serviceability/engineers${zoneId?`?zoneId=${encodeURIComponent(zoneId)}`:""}`
+  ),
+  createEngineerZoneAssignment: body => request("/api/serviceability/engineer-zone-assignments",{method:"POST",body:JSON.stringify(body)}),
+  serviceabilityEngineerZoneAssignments: engineerId => request(`/api/serviceability/engineer-zone-assignments${engineerId?`?engineerId=${engineerId}`:""}`),
+  updateEngineerZoneAssignment: (id, body) => request(`/api/serviceability/engineer-zone-assignments/${id}`,{method:"PUT",body:JSON.stringify(body)}),
+  updateEngineerServiceability: (id, body) => request(`/api/serviceability/engineers/${id}`,{method:"PUT",body:JSON.stringify(body)}),
+  serviceabilityPlan: date => request(`/api/serviceability/daily-plan${date?`?date=${encodeURIComponent(date)}`:""}`),
+  previewServiceAllocation: body => request("/api/serviceability/assign",{method:"POST",body:JSON.stringify({...body,confirm:false})}),
+  confirmServiceAllocation: body => request("/api/serviceability/assign",{method:"POST",body:JSON.stringify({...body,confirm:true})}),
+  manualServiceAssignment: body => request("/api/serviceability/assignments/manual",{method:"POST",body:JSON.stringify(body)}),
+  reassignServiceAssignment: (id, body) => request(`/api/serviceability/assignments/${id}/reassign`,{method:"PUT",body:JSON.stringify(body)}),
+  reassignServiceVisit: (id, body) => request(`/api/serviceability/visits/${id}/reassign`,{method:"PUT",body:JSON.stringify(body)}),
+  updateServiceVisitSequence: (id, sequence) => request(`/api/serviceability/assignments/${id}/sequence?sequence=${sequence}`,{method:"PUT"}),
   rescheduleVisit: async (id, body) => {
     const r=await request(`/api/admin/services/${id}/reschedule`,{method:"POST",body:JSON.stringify(body)});
     invalidateCache();

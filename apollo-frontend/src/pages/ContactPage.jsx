@@ -112,13 +112,11 @@ export default function ContactPage() {
           <div className="cp-form__row">
             <div className="cp-field">
               <label htmlFor="name">Name <span className="cp-required">*</span></label>
-              <span className="cp-helper">Enter your full name as you want us to address you.</span>
               <input id="name" type="text" maxLength={100} value={form.name} onChange={update("name")} placeholder="Your full name" />
               {errors.name && <span className="cp-error">{errors.name}</span>}
             </div>
             <div className="cp-field">
               <label htmlFor="phone">Phone number <span className="cp-required">*</span></label>
-              <span className="cp-helper">10-digit Indian mobile — we’ll call or WhatsApp you on this number.</span>
               <input id="phone" type="tel" inputMode="numeric" maxLength={13} value={form.phone} onChange={update("phone")} placeholder="98765 43210" />
               {errors.phone && <span className="cp-error">{errors.phone}</span>}
             </div>
@@ -127,13 +125,11 @@ export default function ContactPage() {
           <div className="cp-form__row">
             <div className="cp-field">
               <label htmlFor="email">Email</label>
-              <span className="cp-helper">Optional — useful if you want a written quote.</span>
               <input id="email" type="email" maxLength={150} value={form.email} onChange={update("email")} placeholder="you@example.com" />
               {errors.email && <span className="cp-error">{errors.email}</span>}
             </div>
             <div className="cp-field">
               <label htmlFor="city">City <span className="cp-required">*</span></label>
-              <span className="cp-helper">Tell us where the lift will be installed or serviced.</span>
               <input id="city" type="text" maxLength={100} value={form.city} onChange={update("city")} placeholder="Where the lift will be installed" />
               {errors.city && <span className="cp-error">{errors.city}</span>}
             </div>
@@ -141,7 +137,6 @@ export default function ContactPage() {
 
           <div className="cp-field">
             <label htmlFor="interest">What are you looking for?</label>
-            <span className="cp-helper">Choose the closest option — we’ll refine it with you.</span>
             <div className="cp-select">
               <select id="interest" value={form.interest} onChange={update("interest")}>
                 <option value="">Select an option</option>
@@ -152,8 +147,7 @@ export default function ContactPage() {
 
           <div className="cp-field">
             <label htmlFor="message">Tell us more</label>
-            <span className="cp-helper">Share floor count, lift type, budget, or timeline.</span>
-            <textarea id="message" rows={5} maxLength={2000} value={form.message} onChange={update("message")} placeholder="Number of floors, timeline, budget — anything that helps us prepare a quote." />
+            <textarea id="message" rows={5} maxLength={2000} value={form.message} onChange={update("message")} placeholder="Share floor count, lift type, budget, or timeline. Number of floors, timeline, budget — anything that helps us prepare a quote." />
             {errors.message && <span className="cp-error">{errors.message}</span>}
           </div>
 
@@ -224,7 +218,7 @@ export default function ContactPage() {
             </div>
             <div className="cp-direct__row">
               <span className="cp-direct__label">Visit</span>
-              <span>No. 14, Karihobana Halli, T.G. Palya, Bangalore – 560 058</span>
+              <span>#14, Karihobana Halli, T.G.Palya, Bengaluru-560058</span>
             </div>
           </div>
         </div>

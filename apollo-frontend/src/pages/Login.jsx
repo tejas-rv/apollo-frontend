@@ -1,8 +1,6 @@
 import React, {useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {api,clearSession} from "../services/api";
-import AppLogo from "../components/AppLogo";
-import "../components/AppLogo.css";
 
 export default function Login({onLogin}) {
   const [username, setUsername] = useState(
@@ -36,9 +34,10 @@ export default function Login({onLogin}) {
 
   return <div className="login-page">
     <div className="login-card">
-      <div
-          style={{display: "flex", justifyContent: "center", marginBottom: 20}}>
-        <AppLogo size={64}/></div>
+      <div className="login-brand">
+        <strong>APOLLO</strong>
+        <span>Elevator</span>
+      </div>
       <h1>Welcome back</h1><p className="muted">Sign in to the Apollo Elevator
       management system.</p>{error && <div
         className="alert error">{error}</div>}

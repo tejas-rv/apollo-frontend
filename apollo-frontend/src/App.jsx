@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from "react";
 import {Routes,Route,Navigate,NavLink,useNavigate,useLocation} from "react-router-dom";
-import {LayoutDashboard,Users,FileText,Send,LogOut,Menu,Receipt,ClipboardList,History,MessageSquare,ChevronDown,KeyRound,FileCheck,Briefcase,UserPlus,FileSpreadsheet,ShieldCheck,Wrench} from "lucide-react";
+import {LayoutDashboard,Users,FileText,Send,LogOut,Menu,Receipt,ClipboardList,History,MessageSquare,ChevronDown,KeyRound,FileCheck,Briefcase,UserPlus,FileSpreadsheet,ShieldCheck,Wrench,MapPin} from "lucide-react";
 import {api,clearSession} from "./services/api";
 import Login from "./pages/Login";
 import HomePage from "./pages/HomePage";
@@ -14,6 +14,7 @@ import Notifications from "./pages/Notifications";
 import Bills from "./pages/Bills";
 import AmcContracts from "./pages/AmcContracts";
 import Services from "./pages/Services";
+import Serviceability from "./pages/Serviceability";
 import Enquiries from "./pages/Enquiries";
 import Quotations from "./pages/Quotations";
 import WorkOrders from "./pages/WorkOrders";
@@ -30,6 +31,7 @@ const adminNav=[
   ["/app/customer-data","Import / Export",FileSpreadsheet],
   ["/app/amc","AMC contracts",ShieldCheck],
   ["/app/services","Services",Wrench],
+  ["/app/serviceability","Serviceability",MapPin],
   ["/app/bills","Bills",Receipt],
   ["/app/enquiries","Enquiries",MessageSquare],
   ["/app/quotations","Quotations",FileCheck],
@@ -167,6 +169,7 @@ export default function App(){
             <Route path="/customer-data" element={<CustomerDataTransfer/>}/>
             <Route path="/amc" element={<AmcContracts/>}/>
             <Route path="/services" element={<Services/>}/>
+            <Route path="/serviceability" element={<Serviceability/>}/>
             <Route path="/bills" element={<Bills/>}/>
             <Route path="/enquiries" element={<Enquiries/>}/>
             <Route path="/quotations" element={<Quotations/>}/>
